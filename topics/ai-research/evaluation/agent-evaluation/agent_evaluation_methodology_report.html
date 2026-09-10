@@ -1,0 +1,807 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agentic AI 的 Agent Evaluation 方法論報告</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad:true, theme:"default"});</script>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --paper: #ffffff;
+      --ink: #172033;
+      --muted: #607089;
+      --line: #dce3ef;
+      --brand: #2454d6;
+      --soft: #eef3ff;
+      --accent: #0f766e;
+      --warn: #b45309;
+      --code: #0f172a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC",
+        "PingFang TC", "Microsoft JhengHei", Arial, sans-serif;
+      line-height: 1.75;
+      font-size: 16px;
+    }
+    .page {
+      max-width: 1120px;
+      margin: 40px auto;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: 0 18px 50px rgba(23,32,51,.08);
+      overflow: hidden;
+    }
+    header {
+      padding: 52px 64px 42px;
+      background: linear-gradient(135deg, #0f172a, #2454d6);
+      color: white;
+    }
+    header .eyebrow {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.14);
+      font-size: 13px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    h1 {
+      font-size: 40px;
+      line-height: 1.18;
+      margin: 0 0 18px;
+      letter-spacing: -0.03em;
+    }
+    header p {
+      max-width: 840px;
+      margin: 0;
+      color: rgba(255,255,255,.88);
+      font-size: 18px;
+    }
+    main { padding: 44px 64px 64px; }
+    nav.toc {
+      border: 1px solid var(--line);
+      background: #fbfcff;
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 44px;
+    }
+    nav.toc h2 { margin-top: 0; font-size: 20px; }
+    nav.toc ol { columns: 2; margin: 0; padding-left: 22px; }
+    nav.toc a { color: var(--brand); text-decoration: none; }
+    section { margin: 46px 0; }
+    h2 {
+      font-size: 28px;
+      line-height: 1.3;
+      margin: 0 0 16px;
+      letter-spacing: -0.02em;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--line);
+    }
+    h3 {
+      font-size: 21px;
+      margin: 34px 0 10px;
+      color: #0f2f75;
+    }
+    h4 {
+      font-size: 17px;
+      margin: 24px 0 8px;
+      color: #24324a;
+    }
+    p { margin: 10px 0 16px; }
+    .callout {
+      border-left: 5px solid var(--brand);
+      background: var(--soft);
+      padding: 18px 22px;
+      border-radius: 12px;
+      margin: 20px 0;
+    }
+    .simple {
+      border-left-color: var(--accent);
+      background: #ecfdf5;
+    }
+    .warning {
+      border-left-color: var(--warn);
+      background: #fff7ed;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin: 22px 0;
+    }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px;
+      background: #fff;
+    }
+    .card h4 { margin-top: 0; color: var(--brand); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 18px 0 30px;
+      font-size: 14.5px;
+      display: block;
+      overflow-x: auto;
+      white-space: normal;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      vertical-align: top;
+    }
+    th {
+      background: #eef3ff;
+      text-align: left;
+      color: #15244a;
+      font-weight: 700;
+    }
+    tr:nth-child(even) td { background: #fbfcff; }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: #eef2f7;
+      padding: 2px 5px;
+      border-radius: 5px;
+    }
+    pre {
+      background: var(--code);
+      color: #e5e7eb;
+      border-radius: 14px;
+      padding: 18px;
+      overflow-x: auto;
+      line-height: 1.55;
+    }
+    .mermaid {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+      padding: 18px;
+      margin: 20px 0 28px;
+      overflow-x: auto;
+    }
+    .tag {
+      display: inline-block;
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #3730a3;
+      margin-right: 6px;
+      margin-bottom: 4px;
+    }
+    a { color: var(--brand); }
+    .refs li { margin-bottom: 8px; }
+    footer {
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      padding-top: 24px;
+      margin-top: 52px;
+      font-size: 13px;
+    }
+    @media print {
+      body { background: white; }
+      .page { margin: 0; box-shadow: none; border: 0; border-radius: 0; }
+      header { border-radius: 0; }
+      a { color: #000; text-decoration: none; }
+      nav.toc { page-break-after: always; }
+      section { break-inside: auto; }
+      .card, table, pre, .mermaid { break-inside: avoid; }
+    }
+    @media (max-width: 800px) {
+      .page { margin: 0; border-radius: 0; }
+      header, main { padding: 32px 24px; }
+      h1 { font-size: 30px; }
+      nav.toc ol { columns: 1; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+<header>
+  <div class="eyebrow">Agentic AI Research Note</div>
+  <h1>Agentic AI 的 Agent Evaluation 方法論報告</h1>
+  <p>用高中生也能理解的方式，整理 AI Agent 評估的方法、概念、流程、指標、工具、限制與落地建議。</p>
+</header>
+
+<main>
+<nav class="toc">
+  <h2>目錄</h2>
+  <ol>
+    <li><a href="#summary">執行摘要</a></li>
+    <li><a href="#why">為什麼 Agent Evaluation 重要</a></li>
+    <li><a href="#difference">與傳統 LLM Evaluation 的差異</a></li>
+    <li><a href="#layers">評估層級</a></li>
+    <li><a href="#methods">方法總覽</a></li>
+    <li><a href="#details">詳細方法解析</a></li>
+    <li><a href="#pipelines">實務 Pipeline</a></li>
+    <li><a href="#matrix">比較矩陣</a></li>
+    <li><a href="#lifecycle">導入開發生命週期</a></li>
+    <li><a href="#limits">限制與陷阱</a></li>
+    <li><a href="#sources">主要參考來源</a></li>
+  </ol>
+</nav>
+
+<section id="summary">
+  <h2>1. 執行摘要</h2>
+  <div class="callout">
+    <strong>一句話結論：</strong>Agentic AI 的 Evaluation 不只是「看答案對不對」，而是要同時看
+    <strong>任務有沒有完成、過程是否合理、工具是否用對、是否安全、是否穩定、成本與延遲是否可接受</strong>。
+  </div>
+  <p>
+    如果把 agentic AI 粗略說成「LLM + Agent + Evaluation」，方向上大致正確，但更精準的說法是：
+    <strong>LLM 是能力來源，Agent 是把能力接上工具、記憶與流程的執行系統，而 Evaluation 是貫穿設計、測試、上線、監控與改版的量測系統。</strong>
+  </p>
+  <p>
+    對高中生來說，可以把 Agent Evaluation 想成「考試不只看最後答案，也看解題步驟、工具選擇、是否作弊、是否穩定、是否花太久」。一個 AI Agent 就像一個會自己做事的學生：它可能會查資料、按網頁、寫程式、呼叫 API、請其他子 Agent 幫忙。這種系統一旦做錯，錯誤可能不是最後一句話才發生，而是前面某一步就走歪了。
+  </p>
+  <div class="grid">
+    <div class="card">
+      <h4>結果層</h4>
+      <p>任務最後有沒有完成？答案正不正確？資料狀態是否變成目標狀態？</p>
+    </div>
+    <div class="card">
+      <h4>過程層</h4>
+      <p>中間每一步是否合理？工具有沒有用對？是否有錯誤傳遞或繞圈？</p>
+    </div>
+    <div class="card">
+      <h4>營運層</h4>
+      <p>是否安全、穩定、便宜、快速？上線後是否退化？能不能被監控與修正？</p>
+    </div>
+  </div>
+</section>
+
+<section id="why">
+  <h2>2. 為什麼 Agent Evaluation 重要</h2>
+  <p>
+    傳統聊天機器人多半只是「回答一句話」。但 Agentic AI 的目標是「完成任務」：例如幫客戶查訂單、修改資料庫、寫程式、整理報告、操作瀏覽器、安排流程。這代表 Agent 不只會說話，還會做動作。
+  </p>
+  <p>
+    一旦 AI 會做動作，Evaluation 就變得更重要，原因有四個：
+  </p>
+  <table>
+    <thead>
+      <tr><th>原因</th><th>高中生版解釋</th><th>實務風險</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Agent 是多步驟系統</td>
+        <td>像解一道複雜數學題，中間一步錯，最後可能全錯。</td>
+        <td>只看 final answer，可能不知道錯在哪一步。</td>
+      </tr>
+      <tr>
+        <td>Agent 會使用工具</td>
+        <td>像學生會用計算機、查字典、上網，但可能拿錯工具。</td>
+        <td>查錯 API、傳錯參數、誤刪資料、誤觸高風險操作。</td>
+      </tr>
+      <tr>
+        <td>Agent 輸出不穩定</td>
+        <td>同一題考十次，它可能有時對、有時錯。</td>
+        <td>Demo 很漂亮，但上線後表現飄忽不定。</td>
+      </tr>
+      <tr>
+        <td>Agent 有安全風險</td>
+        <td>別人可以在網頁或文件裡偷塞指令，騙它做不該做的事。</td>
+        <td>Prompt injection、資料外洩、越權工具呼叫。</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="difference">
+  <h2>3. 和傳統 LLM Evaluation 的差異</h2>
+  <table>
+    <thead>
+      <tr><th>比較項目</th><th>傳統 LLM Evaluation</th><th>Agent Evaluation</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>評估對象</td>
+        <td>主要看模型的輸出文字。</td>
+        <td>看模型、工具、記憶、流程、環境互動的整體行為。</td>
+      </tr>
+      <tr>
+        <td>成功標準</td>
+        <td>答案是否正確、是否符合格式、是否安全。</td>
+        <td>任務是否完成、每一步是否合理、工具是否用對、成本是否可接受。</td>
+      </tr>
+      <tr>
+        <td>資料型態</td>
+        <td>Prompt、Answer、Reference。</td>
+        <td>Prompt、Trace、Tool calls、Environment state、Final result。</td>
+      </tr>
+      <tr>
+        <td>常見問題</td>
+        <td>幻覺、格式錯、答非所問。</td>
+        <td>規劃錯、工具錯、參數錯、循環、越權、記憶錯、成本爆炸。</td>
+      </tr>
+      <tr>
+        <td>評估方式</td>
+        <td>Exact match、Rubric、LLM-as-judge、人類評審。</td>
+        <td>以上都要，加上 trajectory eval、tool eval、sandbox eval、production monitoring。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout simple">
+    <strong>比喻：</strong>傳統 LLM Evaluation 像批改作文；Agent Evaluation 像評估一個學生能不能完成科展專題。
+    你不只看最後報告，還要看他查資料、做實驗、用工具、記錄結果、處理錯誤的整個過程。
+  </div>
+</section>
+
+<section id="layers">
+  <h2>4. 常見評估層級</h2>
+  <p>一個成熟的 Agent Evaluation 通常不是單一測驗，而是多層次評估。</p>
+  <table>
+    <thead>
+      <tr><th>層級</th><th>要問的問題</th><th>常見指標</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>最終答案 / 任務結果</td>
+        <td>最後有沒有完成任務？答案是否正確？</td>
+        <td>Success rate、Exact Match、Pass@k、State diff</td>
+      </tr>
+      <tr>
+        <td>過程 / Trajectory</td>
+        <td>中間路徑是否合理？哪一步開始錯？</td>
+        <td>Step accuracy、Trajectory score、Root-cause rate</td>
+      </tr>
+      <tr>
+        <td>工具使用</td>
+        <td>工具有沒有選對？參數有沒有填對？</td>
+        <td>Tool-name accuracy、Argument match、Schema validity</td>
+      </tr>
+      <tr>
+        <td>規劃能力</td>
+        <td>Agent 是否會拆任務、安排順序？</td>
+        <td>Plan validity、Subtask completion、Replanning success</td>
+      </tr>
+      <tr>
+        <td>記憶能力</td>
+        <td>多輪任務中是否記得重要資訊？</td>
+        <td>Memory recall、Memory precision、Contradiction rate</td>
+      </tr>
+      <tr>
+        <td>可靠性 / 穩定性</td>
+        <td>同一任務跑多次是否穩定？會不會繞圈？</td>
+        <td>Variance、Loop rate、Retry rate、Pass^k</td>
+      </tr>
+      <tr>
+        <td>安全性</td>
+        <td>遇到惡意輸入是否失控？會不會洩密？</td>
+        <td>Attack success rate、Leakage rate、Safe refusal rate</td>
+      </tr>
+      <tr>
+        <td>成本與延遲</td>
+        <td>完成一次任務花多少錢、多少時間？</td>
+        <td>Cost/task、Token/task、p50/p95 latency、Tool call count</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="methods">
+  <h2>5. 評估方法總覽</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>方法</th>
+        <th>適用場景</th>
+        <th>常見指標</th>
+        <th>優點</th>
+        <th>缺點</th>
+        <th>實作難度</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Benchmark</td>
+        <td>比較不同模型或 Agent 的通用能力</td>
+        <td>Accuracy、Success rate、Pass@k</td>
+        <td>容易比較，有公開參考</td>
+        <td>不一定符合自己的產品場景</td>
+        <td>低到中</td>
+      </tr>
+      <tr>
+        <td>Unit Test</td>
+        <td>測單一工具、單一節點、單一功能</td>
+        <td>Pass/fail、Schema validity</td>
+        <td>快速、便宜、適合 CI</td>
+        <td>看不到整體任務表現</td>
+        <td>低</td>
+      </tr>
+      <tr>
+        <td>Integration Test</td>
+        <td>測多個工具或多個子 Agent 串接</td>
+        <td>Workflow success、Tool accuracy</td>
+        <td>能抓出串接問題</td>
+        <td>維護成本較高</td>
+        <td>中</td>
+      </tr>
+      <tr>
+        <td>End-to-End Task Eval</td>
+        <td>真實任務是否完成</td>
+        <td>Success rate、State diff</td>
+        <td>最貼近使用者價值</td>
+        <td>錯了不一定知道錯在哪裡</td>
+        <td>中</td>
+      </tr>
+      <tr>
+        <td>LLM-as-Judge</td>
+        <td>評估語意品質、主觀標準、摘要、客服回覆</td>
+        <td>Rubric score、Pass/fail、Pairwise win rate</td>
+        <td>可規模化，比人工便宜</td>
+        <td>Judge 也會偏誤，需要校準</td>
+        <td>中</td>
+      </tr>
+      <tr>
+        <td>Human Evaluation</td>
+        <td>高風險、專業領域、品牌語氣、模糊標準</td>
+        <td>SME pass rate、Preference、Inter-rater agreement</td>
+        <td>最能對齊真實需求</td>
+        <td>慢、貴、難規模化</td>
+        <td>高</td>
+      </tr>
+      <tr>
+        <td>Simulation / Sandbox Eval</td>
+        <td>Web、OS、Coding、資料庫或流程自動化</td>
+        <td>Environment state、Functional correctness</td>
+        <td>可重現、可控風險</td>
+        <td>環境建置成本高</td>
+        <td>高</td>
+      </tr>
+      <tr>
+        <td>Red Teaming</td>
+        <td>安全測試、Prompt injection、越權操作</td>
+        <td>Attack success rate、Leakage rate</td>
+        <td>能提前找出最糟情境</td>
+        <td>攻擊面很廣，容易漏測</td>
+        <td>中到高</td>
+      </tr>
+      <tr>
+        <td>Observability / Trace Analysis</td>
+        <td>除錯、上線監控、找失敗根因</td>
+        <td>Trace score、Error taxonomy、Latency</td>
+        <td>能知道 Agent 怎麼壞掉</td>
+        <td>需要完整紀錄與分析工具</td>
+        <td>中</td>
+      </tr>
+      <tr>
+        <td>A/B Testing & Production Monitoring</td>
+        <td>上線後比較新舊版本</td>
+        <td>Conversion、Feedback、Regression、Cost</td>
+        <td>能反映真實使用情境</td>
+        <td>需要流量與監控紀律</td>
+        <td>中</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="details">
+  <h2>6. 詳細方法解析</h2>
+
+  <h3>6.1 自動化任務成功率</h3>
+  <p>
+    這是最直覺的方法：給 Agent 一個任務，最後看它是否完成。像是：「幫我查 C1024 客戶在 2026-06-01 的訂單」，最後資料是否正確、狀態是否符合預期。
+  </p>
+  <p>
+    常見做法是建立一批測試任務，每題都有標準答案或可驗證的目標狀態。Agent 跑完後，用程式比對結果。GAIA、WebArena、SWE-bench、τ-bench 這類 benchmark 都屬於這一大類，只是任務類型不同。
+  </p>
+  <div class="callout warning">
+    <strong>常見陷阱：</strong>只看最後答案可能不知道錯在哪裡。Agent 可能中間亂做，最後剛好猜對；也可能答案看起來對，但資料庫狀態其實被改錯。
+  </div>
+
+  <h3>6.2 步驟級評估 / Trajectory Evaluation</h3>
+  <p>
+    Agent 的完整執行紀錄稱為 trace 或 trajectory。這裡面包含它每一步想做什麼、呼叫什麼工具、工具回傳什麼、接下來怎麼決定。
+  </p>
+  <p>
+    這種方法像老師批改數學題的「解題過程」。即使最後答案錯了，也能知道是公式用錯、單位換錯，還是最後計算錯。對 Agent 來說，這能幫助我們判斷是規劃錯、工具選錯、參數錯，還是模型理解錯。
+  </p>
+  <table>
+    <thead>
+      <tr><th>要看什麼</th><th>例子</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>規劃是否合理</td><td>是否先查訂單，再判斷退款資格，而不是直接退款。</td></tr>
+      <tr><td>工具是否正確</td><td>是否呼叫 <code>lookup_order</code>，而不是 <code>delete_order</code>。</td></tr>
+      <tr><td>參數是否正確</td><td><code>customer_id</code>、日期、產品名稱是否填對。</td></tr>
+      <tr><td>錯誤是否恢復</td><td>API 失敗後是否重試或改問使用者，而不是瞎編。</td></tr>
+    </tbody>
+  </table>
+
+  <h3>6.3 工具呼叫正確性</h3>
+  <p>
+    Tool use 是 Agent 與一般 LLM 最大的差異之一。Agent 不只要會回答，還要會「選工具」與「填參數」。
+  </p>
+  <pre><code>{
+  "tool": "lookup_customer_order",
+  "arguments": {
+    "customer_id": "C1024",
+    "order_date": "2026-06-01"
+  }
+}</code></pre>
+  <p>
+    評估時至少要拆成兩層：第一，工具名稱是否正確；第二，工具參數是否正確。更進一步還可以看 schema 是否合規、是否過度呼叫工具、工具失敗後是否能恢復。
+  </p>
+
+  <h3>6.4 模擬環境 / Sandbox Evaluation</h3>
+  <p>
+    如果 Agent 會操作瀏覽器、作業系統、程式碼或資料庫，最好不要直接讓它在真實環境亂跑，而是先放進 sandbox。這就像學開車先在駕訓場，不是馬上上高速公路。
+  </p>
+  <p>
+    WebArena 讓 Agent 操作模擬網站，OSWorld 讓 Agent 操作真實作業系統環境，SWE-bench 讓 coding agent 在容器裡修改真實 GitHub issue 並跑測試。這些方法都強調「可重現」與「可驗證」。
+  </p>
+
+  <h3>6.5 LLM-as-Judge</h3>
+  <p>
+    有些任務很難用 exact match 評分。例如客服回覆是否有禮貌、摘要是否完整、研究報告是否清楚。這時可以用另一個 LLM 當評審，依照 rubric 打分。
+  </p>
+  <div class="callout warning">
+    <strong>注意：</strong>LLM-as-Judge 很有用，但不是萬能。Judge 也可能偏心、受提示影響、對專業領域判斷不準。因此高風險任務仍要用人類專家校準。
+  </div>
+
+  <h3>6.6 Human Evaluation</h3>
+  <p>
+    人類評估最貴，但在很多場景不可取代。特別是醫療、法律、金融、政府、客服品牌語氣、企業知識這些場景，最後需要專家確認標準。
+  </p>
+  <p>
+    實務上常見做法是：先用自動 grader 快速篩選，再把低分、分歧、高風險或抽樣案例送給人類評審。這樣可以兼顧成本與品質。
+  </p>
+
+  <h3>6.7 Red Teaming 與安全評估</h3>
+  <p>
+    Agent 會接觸外部資料，所以容易受到間接 Prompt Injection。惡意指令可能藏在網頁、文件、Email、工具回傳結果中，騙 Agent 忘記原本任務，或執行越權操作。
+  </p>
+  <p>
+    安全評估要測：是否洩漏機密、是否誤信外部指令、是否越權呼叫工具、是否拒絕合法請求、是否需要人類確認高風險動作。
+  </p>
+
+  <h3>6.8 回歸測試與線上監控</h3>
+  <p>
+    Agent 系統最怕「改好一個地方，壞掉三個地方」。所以每次改 prompt、換模型、改工具 schema、調 workflow，都應該跑 regression tests。
+  </p>
+  <p>
+    上線後也不能停止評估。真實使用者會問出測試集沒有的問題，因此 production traces 要持續抽樣、評分、警示與回流到資料集。
+  </p>
+
+  <h3>6.9 成本、延遲與資源評估</h3>
+  <p>
+    一個 Agent 成功率高但每次要花 3 分鐘、100 次工具呼叫、很高 API 費用，仍可能無法商用。因此每個任務都應該同時記錄 cost/task、token/task、p50/p95 latency、tool call count、retry count。
+  </p>
+</section>
+
+<section id="pipelines">
+  <h2>7. 實務 Pipeline 範例</h2>
+
+  <h3>7.1 客服 Agent 評估 Pipeline</h3>
+  <p>
+    客服 Agent 最常見的風險是：看起來回答得很好，但其實違反政策、查錯訂單、該轉真人卻沒轉真人。因此要同時評估任務成功率、政策合規、工具使用、人類抽查與線上監控。
+  </p>
+  <div class="mermaid">
+flowchart TD
+    A[蒐集客服案例與政策規範] --> B[建立離線資料集]
+    B --> C[定義成功條件<br/>是否解決問題 / 是否合規 / 是否該轉真人]
+    C --> D[建立自動 graders<br/>最終回覆 / 政策合規 / 工具名稱與參數]
+    D --> E[在 mock 或 sandbox 工具上重跑]
+    E --> F[抽樣送人工審查]
+    F --> G[修 prompt / tool schema / routing]
+    G --> H[CI 回歸測試]
+    H --> I[小流量上線]
+    I --> J[線上監控與告警<br/>低分 trace 進 review queue]
+  </div>
+
+  <h3>7.2 資料查詢 / 工具使用 Agent 評估 Pipeline</h3>
+  <p>
+    這類 Agent 適合把「工具名稱」與「參數」拆開評估，因為很多錯誤不是模型不懂，而是查錯表、填錯欄位、日期格式錯。
+  </p>
+  <div class="mermaid">
+flowchart TD
+    A[建立查詢任務集<br/>問題 / 可用工具 / 正確答案 / 正確 tool call] --> B[單步評估]
+    B --> C[工具名稱是否正確]
+    B --> D[參數是否正確]
+    C --> E[執行工具並驗證最終答案]
+    D --> E
+    E --> F[記錄 trace]
+    F --> G[分析失敗類型<br/>選錯工具 / 參數漏填 / 單位格式錯]
+    G --> H[修 schema / few-shot / routing rules]
+    H --> I[回歸測試]
+    I --> J[線上抽樣監控]
+  </div>
+
+  <h3>7.3 Coding Agent 評估 Pipeline</h3>
+  <p>
+    Coding Agent 不只要看測試有沒有過，也要看 patch 是否安全、是否只是鑽測試漏洞、成本是否合理。
+  </p>
+  <div class="mermaid">
+flowchart TD
+    A[蒐集 issue / spec / repo snapshot] --> B[建立容器化測試環境]
+    B --> C[Agent 產生 patch]
+    C --> D[套用 patch]
+    D --> E[執行單元測試與整合測試]
+    E --> F[執行靜態分析與安全檢查]
+    F --> G[量測成本與延遲]
+    G --> H[人工審查高風險 diff]
+    H --> I[加入回歸資料集]
+    I --> J[比較新舊 agent / prompt / model]
+  </div>
+</section>
+
+<section id="matrix">
+  <h2>8. 比較矩陣</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>方法</th>
+        <th>可靠性</th>
+        <th>可自動化程度</th>
+        <th>成本</th>
+        <th>可解釋性</th>
+        <th>最適合任務</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>自動化任務成功率</td><td>中到高</td><td>高</td><td>低到中</td><td>低</td><td>有明確終局的任務</td></tr>
+      <tr><td>步驟級評估</td><td>高</td><td>中</td><td>中</td><td>高</td><td>多步驟規劃、工具鏈</td></tr>
+      <tr><td>工具呼叫正確性</td><td>高</td><td>高</td><td>低到中</td><td>高</td><td>資料查詢、API、MCP</td></tr>
+      <tr><td>模擬環境 / 沙盒</td><td>高</td><td>中</td><td>高</td><td>中</td><td>Web、OS、Coding、自動化流程</td></tr>
+      <tr><td>對抗測試</td><td>中到高</td><td>中</td><td>中到高</td><td>中</td><td>高風險、安全敏感任務</td></tr>
+      <tr><td>人類評估</td><td>高</td><td>低</td><td>高</td><td>中到高</td><td>專業領域、主觀品質、高風險輸出</td></tr>
+      <tr><td>長期穩定性評估</td><td>高</td><td>中</td><td>高</td><td>中</td><td>長任務、多輪、多工具、記憶任務</td></tr>
+      <tr><td>Trace / 因果分析</td><td>中到高</td><td>中</td><td>中到高</td><td>高</td><td>除錯、技能分析、架構優化</td></tr>
+      <tr><td>回歸測試與監控</td><td>中到高</td><td>高</td><td>低到中</td><td>中</td><td>所有準備上線的任務</td></tr>
+      <tr><td>成本 / 延遲 / 資源評估</td><td>營運面高</td><td>高</td><td>低</td><td>高</td><td>所有正式商用任務</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <strong>實務選法：</strong>先用任務成功率當總分，再用步驟級評估與工具呼叫評估找根因；要上線時，補上對抗測試、回歸監控、成本延遲指標；高風險場景一定要有人類審查。
+  </div>
+</section>
+
+<section id="lifecycle">
+  <h2>9. 導入開發生命週期的建議</h2>
+  <p>
+    最重要的最佳實務是：<strong>把 evaluation 當工程系統，不要當 demo 後面的附錄。</strong>
+    Agent Evaluation 應該從專案第一天就設計，而不是等上線前才補。
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>開發階段</th><th>最少必做 Evaluation</th><th>產出物</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>問題定義</td>
+        <td>定義成功條件、失敗類型、風險類型</td>
+        <td>Eval objective、Failure taxonomy、Risk map</td>
+      </tr>
+      <tr>
+        <td>原型期</td>
+        <td>小型離線資料集、最終成功率、單步工具評估</td>
+        <td>Dataset、Grader、Baseline</td>
+      </tr>
+      <tr>
+        <td>整合期</td>
+        <td>Sandbox、Trace grading、對抗案例</td>
+        <td>可重現測試環境、Trace rubric</td>
+      </tr>
+      <tr>
+        <td>上線前</td>
+        <td>Regression tests、A/B 比較、專家人審</td>
+        <td>Release gate、Pairwise report、批准清單</td>
+      </tr>
+      <tr>
+        <td>上線後</td>
+        <td>Online evaluators、Dashboard、Alerts、資料回流</td>
+        <td>線上品質儀表板、告警規則、持續更新的 eval set</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>建議的 Dashboard 四大區塊</h3>
+  <div class="grid">
+    <div class="card">
+      <h4>品質</h4>
+      <p>總成功率、分場景成功率、tool accuracy、step accuracy、human pass rate。</p>
+    </div>
+    <div class="card">
+      <h4>安全</h4>
+      <p>Prompt injection 攻擊成功率、越權工具呼叫率、敏感資訊洩漏率、誤拒率。</p>
+    </div>
+    <div class="card">
+      <h4>穩定</h4>
+      <p>Pass@k、重試率、循環率、長任務後段延遲、記憶錯誤率。</p>
+    </div>
+    <div class="card">
+      <h4>效率</h4>
+      <p>p50/p95 latency、cost/task、token/task、步數、工具呼叫數。</p>
+    </div>
+    <div class="card">
+      <h4>回歸</h4>
+      <p>新舊版本差異、失敗類型變化、改 prompt 後哪些任務變好或變差。</p>
+    </div>
+    <div class="card">
+      <h4>人審</h4>
+      <p>低分 trace、使用者差評、高風險操作與專家審查結果。</p>
+    </div>
+  </div>
+</section>
+
+<section id="limits">
+  <h2>10. 開放問題與限制</h2>
+  <h3>10.1 Benchmark 分數不等於產品可靠度</h3>
+  <p>
+    公開 benchmark 很適合比較能力，但不代表你的企業場景一定有效。Agent 可能在 GAIA 或 WebArena 表現不錯，卻在你的 ERP、客服政策、內部文件格式上失敗。
+  </p>
+
+  <h3>10.2 LLM-as-Judge 需要校準</h3>
+  <p>
+    LLM-as-Judge 可以快速擴大評估規模，但它本身也可能偏誤。實務上應該用人類標註資料校準 judge，並定期抽查。
+  </p>
+
+  <h3>10.3 Step-level Evaluation 成本較高</h3>
+  <p>
+    步驟級評估很有價值，但要標註或設計 rubric，比只看最後答案更花時間。建議先針對高風險節點做，例如 routing、tool selection、final verification。
+  </p>
+
+  <h3>10.4 長任務與記憶仍然很難測</h3>
+  <p>
+    很多 Agent 在短任務中看起來很好，但任務一長就會失憶、繞圈、成本爆炸。長期穩定性與記憶評估仍是快速發展中的領域。
+  </p>
+
+  <h3>10.5 安全測試不可能一次完成</h3>
+  <p>
+    Prompt injection、工具濫用、資料外洩、越權操作會隨著產品變化而改變。安全評估必須持續更新，不是上線前跑一次就結束。
+  </p>
+
+  <div class="callout simple">
+    <strong>最後總結：</strong>成熟的 Agent Evaluation 一定是混合式的。
+    你需要黑箱總分看任務有沒有完成，需要白箱 trace 找錯在哪一步，需要人類評估對齊真實需求，需要對抗測試看最糟情況，需要線上監控防退化，也需要成本與延遲指標判斷能不能商用。
+  </div>
+</section>
+
+<section id="sources">
+  <h2>11. 主要參考來源</h2>
+  <p>以下是本報告整理時依據的代表性來源。部分前沿研究為預印本，適合用來理解趨勢與方法，但實務導入時仍應搭配自己的資料集與人類審查。</p>
+  <ol class="refs">
+    <li>OpenAI, <a href="https://platform.openai.com/docs/guides/evaluation-best-practices">Evaluation best practices</a></li>
+    <li>OpenAI, <a href="https://platform.openai.com/docs/guides/trace-grading">Trace grading</a></li>
+    <li>OpenAI Cookbook, <a href="https://cookbook.openai.com/examples/evaluation/use-cases/tools-evaluation">Tools Evaluation</a></li>
+    <li>OpenAI Cookbook, <a href="https://cookbook.openai.com/examples/evaluation/building_resilient_prompts_using_an_evaluation_flywheel">Evaluation Flywheel</a></li>
+    <li>LangSmith, <a href="https://docs.langchain.com/langsmith/evaluation">Evaluation</a></li>
+    <li>LangSmith, <a href="https://docs.langchain.com/langsmith/evaluation-approaches">Application-specific evaluation approaches</a></li>
+    <li>LangSmith, <a href="https://docs.langchain.com/langsmith/annotation-queues">Annotation queues</a></li>
+    <li>GAIA, <a href="https://arxiv.org/abs/2311.12983">A benchmark for General AI Assistants</a></li>
+    <li>WebArena, <a href="https://webarena.dev/og/">A realistic web environment for autonomous agents</a></li>
+    <li>SWE-bench, <a href="https://www.swebench.com/SWE-bench/">Software engineering benchmark</a></li>
+    <li>OSWorld, <a href="https://arxiv.org/abs/2404.07972">Benchmarking multimodal agents in real computer environments</a></li>
+    <li>τ-bench, <a href="https://arxiv.org/abs/2406.12045">Tool-agent-user interaction benchmark</a></li>
+    <li>ToolSandbox, <a href="https://arxiv.org/abs/2408.04682">Stateful interactive evaluation for tool use</a></li>
+    <li>NIST, <a href="https://www.nist.gov/ai-test-evaluation-validation-and-verification-tevv">AI Test, Evaluation, Validation and Verification</a></li>
+    <li>NIST, <a href="https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence">AI Risk Management Framework: Generative AI Profile</a></li>
+    <li>OWASP, <a href="https://genai.owasp.org/resource/owasp-top-10-for-llm-applications-2025/">OWASP Top 10 for LLM Applications</a></li>
+    <li>OpenAI, <a href="https://openai.com/safety/prompt-injections/">Prompt injections</a></li>
+    <li>Lightman et al., <a href="https://arxiv.org/abs/2305.20050">Let’s Verify Step by Step</a></li>
+    <li>Ouyang et al., <a href="https://arxiv.org/abs/2203.02155">Training language models to follow instructions with human feedback</a></li>
+    <li>AgentSecBench, <a href="https://arxiv.org/abs/2605.26269">Measuring prompt injection, privacy leakage, and tool-use integrity in LLM agents</a></li>
+  </ol>
+</section>
+
+<footer>
+  <p>產生日期：2026-06-10。此 HTML 為研究報告整理版，適合內部閱讀、簡報前置資料與列印成 PDF。</p>
+</footer>
+</main>
+</div>
+</body>
+</html>

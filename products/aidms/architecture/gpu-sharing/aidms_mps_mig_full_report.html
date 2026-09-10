@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AIDMS GPU Sharing Strategy: NVIDIA MPS vs MIG</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --primary: #2563eb;
+      --primary-soft: #dbeafe;
+      --green: #16a34a;
+      --green-soft: #dcfce7;
+      --orange: #ea580c;
+      --orange-soft: #ffedd5;
+      --red: #dc2626;
+      --red-soft: #fee2e2;
+      --purple: #7c3aed;
+      --purple-soft: #ede9fe;
+      --dark: #111827;
+      --code: #0f172a;
+      --shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      background: #0f172a;
+      color: #e5e7eb;
+      padding: 26px 20px;
+    }
+
+    aside h1 {
+      font-size: 19px;
+      line-height: 1.35;
+      margin: 0 0 8px;
+      color: white;
+    }
+
+    aside .subtitle {
+      font-size: 13px;
+      color: #94a3b8;
+      margin-bottom: 24px;
+    }
+
+    nav a {
+      display: block;
+      color: #cbd5e1;
+      text-decoration: none;
+      padding: 9px 10px;
+      border-radius: 10px;
+      font-size: 14px;
+      margin: 3px 0;
+    }
+
+    nav a:hover, nav a.active {
+      background: rgba(59, 130, 246, 0.22);
+      color: white;
+    }
+
+    .main {
+      padding: 36px 46px 80px;
+      max-width: 1240px;
+      width: 100%;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 65%, #06b6d4 100%);
+      color: white;
+      padding: 44px;
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      margin-bottom: 26px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -80px;
+      top: -80px;
+      width: 260px;
+      height: 260px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 50%;
+    }
+
+    .hero h2 {
+      font-size: 38px;
+      line-height: 1.2;
+      margin: 0 0 14px;
+      max-width: 820px;
+    }
+
+    .hero p {
+      font-size: 18px;
+      margin: 0;
+      color: #dbeafe;
+      max-width: 860px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin: 20px 0 28px;
+      flex-wrap: wrap;
+    }
+
+    .search {
+      flex: 1;
+      min-width: 260px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-size: 15px;
+      background: white;
+      outline: none;
+    }
+
+    .btn {
+      border: 0;
+      background: var(--dark);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 14px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    section {
+      margin: 28px 0;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 10px 25px rgba(15,23,42,0.04);
+      padding: 30px;
+    }
+
+    section h2 {
+      margin: 0 0 16px;
+      font-size: 28px;
+      color: #111827;
+      letter-spacing: -0.02em;
+    }
+
+    section h3 {
+      margin-top: 28px;
+      font-size: 21px;
+      color: #111827;
+    }
+
+    .lead {
+      font-size: 18px;
+      color: #374151;
+      margin-top: 0;
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+    .card {
+      background: #f9fafb;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+    }
+
+    .card h3, .card h4 {
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .tag.blue { background: var(--primary-soft); color: var(--primary); }
+    .tag.green { background: var(--green-soft); color: var(--green); }
+    .tag.orange { background: var(--orange-soft); color: var(--orange); }
+    .tag.red { background: var(--red-soft); color: var(--red); }
+    .tag.purple { background: var(--purple-soft); color: var(--purple); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      overflow: hidden;
+      border-radius: 14px;
+      font-size: 15px;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 13px 14px;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      background: #f3f4f6;
+      color: #111827;
+      font-weight: 700;
+    }
+
+    tr:nth-child(even) td { background: #fafafa; }
+
+    .quote {
+      border-left: 5px solid var(--primary);
+      background: #eff6ff;
+      padding: 16px 18px;
+      border-radius: 12px;
+      margin: 18px 0;
+      font-size: 17px;
+      color: #1e3a8a;
+    }
+
+    .warning {
+      border-left: 5px solid var(--orange);
+      background: var(--orange-soft);
+      padding: 16px 18px;
+      border-radius: 12px;
+      margin: 18px 0;
+      color: #7c2d12;
+    }
+
+    .danger {
+      border-left: 5px solid var(--red);
+      background: var(--red-soft);
+      padding: 16px 18px;
+      border-radius: 12px;
+      margin: 18px 0;
+      color: #7f1d1d;
+    }
+
+    .success {
+      border-left: 5px solid var(--green);
+      background: var(--green-soft);
+      padding: 16px 18px;
+      border-radius: 12px;
+      margin: 18px 0;
+      color: #14532d;
+    }
+
+    code, pre {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+
+    pre {
+      background: var(--code);
+      color: #d1d5db;
+      padding: 18px;
+      border-radius: 16px;
+      overflow-x: auto;
+      font-size: 14px;
+    }
+
+    .diagram {
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 18px;
+      padding: 22px;
+      margin: 18px 0;
+    }
+
+    .flow {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .box {
+      background: white;
+      border: 1px solid #cbd5e1;
+      border-radius: 14px;
+      padding: 12px 14px;
+      min-width: 150px;
+      text-align: center;
+      font-weight: 700;
+      box-shadow: 0 6px 15px rgba(15,23,42,0.06);
+    }
+
+    .arrow {
+      color: #64748b;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .gpu {
+      border: 2px solid #1d4ed8;
+      background: #eff6ff;
+      border-radius: 18px;
+      padding: 16px;
+      margin-top: 12px;
+    }
+
+    .slices {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(4, 1fr);
+      margin-top: 12px;
+    }
+
+    .slice {
+      background: white;
+      border: 1px solid #93c5fd;
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+      font-size: 13px;
+      min-height: 68px;
+    }
+
+    details {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin: 12px 0;
+      background: #fafafa;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .pill {
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 13px;
+      color: #374151;
+    }
+
+    .decision {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .decision .choice {
+      border: 2px solid var(--line);
+      border-radius: 18px;
+      padding: 20px;
+      background: #ffffff;
+    }
+
+    .choice.recommended { border-color: var(--green); background: #f0fdf4; }
+    .choice.experimental { border-color: var(--orange); background: #fff7ed; }
+
+    .footer {
+      color: var(--muted);
+      text-align: center;
+      margin: 40px 0 10px;
+      font-size: 13px;
+    }
+
+    mark {
+      background: #fef08a;
+      padding: 0 3px;
+      border-radius: 4px;
+    }
+
+    .hidden-by-search { display: none !important; }
+
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+      aside { position: relative; height: auto; }
+      .main { padding: 24px 18px 60px; }
+      .hero { padding: 30px; }
+      .hero h2 { font-size: 28px; }
+      .grid-2, .grid-3, .grid-4, .decision { grid-template-columns: 1fr; }
+      .slices { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media print {
+      aside, .toolbar { display: none; }
+      .layout { display: block; }
+      .main { max-width: none; padding: 0; }
+      section, .hero { box-shadow: none; break-inside: avoid; }
+      body { background: white; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside>
+      <h1>AIDMS GPU Sharing Strategy</h1>
+      <div class="subtitle">NVIDIA MPS vs MIG 完整整理</div>
+      <nav id="toc">
+        <a href="#summary">一頁結論</a>
+        <a href="#analogy">12歲也懂的比喻</a>
+        <a href="#mps">MPS 原理</a>
+        <a href="#mig">MIG 原理</a>
+        <a href="#compare">MPS vs MIG 比較</a>
+        <a href="#webui">Web UI 切 MIG</a>
+        <a href="#llm">LLM 推論建議</a>
+        <a href="#crossmig">大模型跨 MIG 問題</a>
+        <a href="#memory">vRAM Quota 與 OOM</a>
+        <a href="#threads">Active Thread Percentage</a>
+        <a href="#uid">MPS 統一 UID 影響</a>
+        <a href="#project">AIDMS Project 邊界</a>
+        <a href="#product">產品定位與對外說法</a>
+        <a href="#rules">建議設計規則</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <div class="hero">
+        <h2>AIDMS 在 MPS 與 MIG 之間，應該怎麼定位？</h2>
+        <p>這份文件把完整對話整理成可閱讀的技術與產品說明：MPS 適合彈性共享，MIG 適合硬體隔離；AIDMS 可用 Project 作為租戶邊界，在 Project 內用 MPS 提供動態 vRAM quota，並在需要強隔離時使用 MIG 或 Dedicated GPU。</p>
+      </div>
+
+      <div class="toolbar">
+        <input id="searchBox" class="search" type="search" placeholder="搜尋：MPS、MIG、vRAM、Project、NCCL、UID..." />
+        <button class="btn" onclick="window.print()">列印 / 另存 PDF</button>
+        <button class="btn" onclick="expandAll()">展開全部</button>
+        <button class="btn" onclick="collapseAll()">收合全部</button>
+      </div>
+
+      <section id="summary" data-search>
+        <h2>一頁結論</h2>
+        <p class="lead">如果只用一句話總結：<strong>MPS 是彈性共享，不是硬體隔離；MIG 是硬體隔離，不是高度彈性；AIDMS 的價值是用 Project 與 Policy Layer 幫客戶選對模式。</strong></p>
+
+        <div class="grid grid-3">
+          <div class="card">
+            <span class="tag green">建議主打</span>
+            <h3>MPS Sharing Mode</h3>
+            <p>同一 Project 內，多個 LLM instance 共享同一張 GPU，透過 vRAM quota 與部分 compute 控管提升 GPU 使用率。</p>
+          </div>
+          <div class="card">
+            <span class="tag blue">建議補強</span>
+            <h3>MIG Isolation Mode</h3>
+            <p>當客戶需要硬體級隔離、固定配額、較穩定 SLA 或跨安全邊界時，用 MIG 或 Dedicated GPU。</p>
+          </div>
+          <div class="card">
+            <span class="tag purple">AIDMS 定位</span>
+            <h3>Project-Level Governance</h3>
+            <p>Project 是主要資源與租戶邊界。MPS 不跨 Project 共享，降低跨租戶安全、稽核與故障擴散風險。</p>
+          </div>
+        </div>
+
+        <div class="quote">
+          建議對外主軸：AIDMS 的 MPS 模式是在 Project 內共享 GPU，而不是跨 Project 共享 GPU；Project 作為單一租戶邊界，可有效降低跨租戶共用 MPS 的安全與稽核問題。若需要硬體級隔離，建議使用 MIG 或獨占 GPU。
+        </div>
+      </section>
+
+      <section id="analogy" data-search>
+        <h2>12歲也懂的比喻</h2>
+        <div class="grid grid-2">
+          <div class="card">
+            <span class="tag orange">MPS</span>
+            <h3>同一間大教室，大家一起用</h3>
+            <p>MPS 像是很多學生在同一間大教室上課。老師可以規定每組最多用幾張桌子，也可以規定一次不要派太多人上台，但教室、走道、黑板、冷氣還是一起用。</p>
+            <p><strong>意思：</strong>可以做 vRAM quota 與部分執行比例控管，但 GPU core、bandwidth、cache 還是共享。</p>
+          </div>
+          <div class="card">
+            <span class="tag blue">MIG</span>
+            <h3>把大教室隔成幾間小教室</h3>
+            <p>MIG 像是把一間大教室用牆壁切成多間小教室。每間小教室有自己的桌子、黑板與空間。A 班再吵，也比較不會影響 B 班。</p>
+            <p><strong>意思：</strong>提供硬體級隔離，但切好後彈性比較低。</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="mps" data-search>
+        <h2>MPS 原理</h2>
+        <p class="lead">MPS，Multi-Process Service，主要目標是讓多個 CUDA process 更有效率地共用同一張 GPU。</p>
+
+        <div class="diagram">
+          <div class="flow">
+            <div class="box">LLM Instance A</div>
+            <div class="box">LLM Instance B</div>
+            <div class="box">Embedding</div>
+            <div class="arrow">→</div>
+            <div class="box">MPS Server</div>
+            <div class="arrow">→</div>
+            <div class="box">同一張 GPU</div>
+          </div>
+        </div>
+
+        <h3>MPS 解決什麼問題？</h3>
+        <ul>
+          <li>讓多個小模型或多個推論服務同時使用 GPU。</li>
+          <li>降低多 process 之間的 context switching 成本。</li>
+          <li>提升 GPU utilization，避免一張大 GPU 被單一小模型閒置浪費。</li>
+          <li>可搭配 memory limit 與 active thread percentage 做軟體層資源控管。</li>
+        </ul>
+
+        <h3>MPS 不等於什麼？</h3>
+        <div class="warning">
+          MPS 不等於 MIG。MPS 不會把 GPU 硬體真的切成多張小 GPU。它是同一張 GPU 上的共享與調度機制，不是完整硬體隔離。
+        </div>
+      </section>
+
+      <section id="mig" data-search>
+        <h2>MIG 原理</h2>
+        <p class="lead">MIG，Multi-Instance GPU，是把支援的 NVIDIA GPU 在硬體層切成多個 GPU instance。每個 instance 像是一張小 GPU，擁有固定的 compute 與 memory 資源。</p>
+
+        <div class="gpu">
+          <strong>一張支援 MIG 的 GPU</strong>
+          <div class="slices">
+            <div class="slice">MIG Slice A<br/>固定 vRAM<br/>固定部分 SM</div>
+            <div class="slice">MIG Slice B<br/>固定 vRAM<br/>固定部分 SM</div>
+            <div class="slice">MIG Slice C<br/>固定 vRAM<br/>固定部分 SM</div>
+            <div class="slice">MIG Slice D<br/>固定 vRAM<br/>固定部分 SM</div>
+          </div>
+        </div>
+
+        <h3>MIG 的價值</h3>
+        <ul>
+          <li>硬體級資源隔離。</li>
+          <li>每個 slice 有固定 vRAM 與部分硬體資源。</li>
+          <li>適合多租戶、強隔離、固定 SLA、政府或金融場景。</li>
+          <li>可讓管理平台把一張大 GPU 當成多張小 GPU 分配。</li>
+        </ul>
+
+        <h3>MIG 的限制</h3>
+        <ul>
+          <li>切割 profile 有固定規格，不是想切 13GB 就切 13GB。</li>
+          <li>重新變更 geometry 通常需要先停掉該 GPU 上的 workload。</li>
+          <li>不適合把多個小 MIG slice 再合起來跑一個大模型。</li>
+          <li>對大模型 tensor parallel / NCCL 不是最理想架構。</li>
+        </ul>
+      </section>
+
+      <section id="compare" data-search>
+        <h2>MPS vs MIG 比較</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>項目</th>
+              <th>MPS</th>
+              <th>MIG</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>核心概念</td>
+              <td>同一張 GPU 上的多 process 共享與調度</td>
+              <td>把 GPU 硬體切成多個 GPU instance</td>
+            </tr>
+            <tr>
+              <td>vRAM 控制</td>
+              <td>可用 memory limit 做上限控管，但本質仍是共享池</td>
+              <td>每個 MIG slice 有固定的硬體記憶體區塊</td>
+            </tr>
+            <tr>
+              <td>GPU core / SM</td>
+              <td>可用 active thread percentage 做軟體層限制，但不是固定分配 SM</td>
+              <td>固定分配部分 SM，硬體隔離較強</td>
+            </tr>
+            <tr>
+              <td>Memory bandwidth / cache</td>
+              <td>仍共享，無法完整隔離</td>
+              <td>隔離程度較高，較可預期</td>
+            </tr>
+            <tr>
+              <td>彈性</td>
+              <td>高，可動態調整 instance vRAM quota</td>
+              <td>較低，profile 固定，重切需管理流程</td>
+            </tr>
+            <tr>
+              <td>隔離性</td>
+              <td>中低，適合同一信任邊界內共享</td>
+              <td>高，適合多租戶與強隔離</td>
+            </tr>
+            <tr>
+              <td>適合場景</td>
+              <td>一堆小 LLM、embedding、reranker、同 Project 多服務</td>
+              <td>多租戶、固定配額、SLA、政府金融、硬體隔離</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="webui" data-search>
+        <h2>Web UI 能不能切 MIG？</h2>
+        <p class="lead">可以，但 Web UI 本身不是在瀏覽器裡切 GPU，而是呼叫 host 端的 agent，再透過 NVIDIA 管理介面切割。</p>
+
+        <div class="diagram">
+          <div class="flow">
+            <div class="box">AIDMS Web UI</div>
+            <div class="arrow">→</div>
+            <div class="box">Host Agent</div>
+            <div class="arrow">→</div>
+            <div class="box">NVML / nvidia-smi</div>
+            <div class="arrow">→</div>
+            <div class="box">MIG GI / CI</div>
+          </div>
+        </div>
+
+        <h3>是否需要重開機？</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>GPU 世代</th>
+              <th>代表 GPU</th>
+              <th>啟用 MIG Mode</th>
+              <th>實務注意事項</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Ampere</td>
+              <td>A100 / A30</td>
+              <td>可能需要 GPU reset，不一定是整機 reboot</td>
+              <td>GPU 上不能有 workload，否則可能 pending 或需要 reboot</td>
+            </tr>
+            <tr>
+              <td>Hopper</td>
+              <td>H100 / H200</td>
+              <td>通常不需要 GPU reset，也不需要整機 reboot</td>
+              <td>變更既有 MIG layout 仍建議先停止或遷移 workload</td>
+            </tr>
+            <tr>
+              <td>Blackwell</td>
+              <td>RTX PRO 6000 Blackwell / B200 等</td>
+              <td>通常可動態設定</td>
+              <td>工作站顯示模式、driver 與產品線支援要確認</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="warning">
+          「立即生效」通常是指新的 MIG instance 建立後，新啟動的 container 或服務可以使用。已經在跑的 container 不會魔法般自動變成 MIG container。
+        </div>
+      </section>
+
+      <section id="llm" data-search>
+        <h2>一堆小 LLM 推論服務，該用 MPS 還是 MIG？</h2>
+        <div class="decision">
+          <div class="choice recommended">
+            <h3>推薦：Project 內 MPS Sharing</h3>
+            <p>如果是同一個 Project / 同一租戶內，有很多小 LLM、embedding、reranker 或分類模型，MPS 比較便利。</p>
+            <ul>
+              <li>彈性高</li>
+              <li>vRAM quota 可調</li>
+              <li>較容易提升 GPU utilization</li>
+              <li>不需要事先切固定 MIG profile</li>
+            </ul>
+          </div>
+          <div class="choice">
+            <h3>推薦：MIG Isolation</h3>
+            <p>如果是不同租戶、不同安全邊界、需要硬體隔離或固定 SLA，MIG 更合適。</p>
+            <ul>
+              <li>硬體級隔離</li>
+              <li>固定配額</li>
+              <li>較可預期</li>
+              <li>較適合政府、金融、多租戶環境</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>最佳實務</h3>
+        <pre>Project A
+  ├─ GPU 0: MPS Sharing Mode
+  │    ├─ LLM Instance A1: 36GB quota
+  │    └─ LLM Instance A2: 60GB quota
+  │
+  └─ GPU 1: Full GPU / Large Model
+
+Project B
+  └─ GPU 2: MIG Isolation Mode</pre>
+      </section>
+
+      <section id="crossmig" data-search>
+        <h2>大模型能不能跨 MIG Instance？</h2>
+        <p class="lead">要分清楚：container 看得到多個 MIG device，和一個大模型能不能穩定跨它們做 tensor parallel，是兩件事。</p>
+
+        <h3>同一張 GPU 上的多個 MIG instance</h3>
+        <div class="danger">
+          不建議把同一張 GPU 上的兩個 MIG instance 當成兩張 GPU 來跑同一個大 LLM。MIG 的設計是隔離，不是合體。
+        </div>
+
+        <h3>不同 GPU 上的 MIG instance</h3>
+        <p>技術上可能看得到，也可能在某些環境下跑得起，但不建議把它當成正式穩定的大模型 tensor parallel 架構。</p>
+        <table>
+          <thead>
+            <tr>
+              <th>問題</th>
+              <th>建議答案</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Container 可以看到不同卡上的 MIG instance 嗎？</td>
+              <td>可以，視 driver / CUDA / runtime 支援而定</td>
+            </tr>
+            <tr>
+              <td>可否用來做正式大模型 tensor parallel？</td>
+              <td>不建議</td>
+            </tr>
+            <tr>
+              <td>為什麼？</td>
+              <td>NCCL、P2P、topology、bandwidth、latency 與框架支援都可能不穩</td>
+            </tr>
+            <tr>
+              <td>大模型正式服務建議？</td>
+              <td>使用完整 GPU 跨卡，或單張完整大 GPU</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <pre>推薦：
+GPU 0 full + GPU 1 full → 大模型 tensor parallel
+
+不推薦：
+GPU 0 MIG slice + GPU 1 MIG slice → 大模型 tensor parallel production</pre>
+      </section>
+
+      <section id="memory" data-search>
+        <h2>MPS vRAM Quota 與 OOM 行為</h2>
+        <p class="lead">假設一張 RTX PRO 6000 96GB，在 MPS 模式下配置：LLM Instance A = 36GB，LLM Instance B = 60GB。A 超過 36GB 會怎樣？</p>
+
+        <div class="success">
+          如果 36GB 是真正生效的 MPS / CUDA hard memory limit，A 超過 36GB 時會 OOM，不會吃到 B 的 60GB。
+        </div>
+
+        <div class="warning">
+          如果只是 UI 顯示或 runtime 軟設定，沒有真正設 hard limit，A 可能吃掉共享 GPU memory pool 裡原本預期留給 B 的空間，導致 B 後續 OOM。
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>情境</th>
+              <th>A 超過 36GB 的結果</th>
+              <th>對 B 的影響</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>MPS / CUDA hard memory cap 生效</td>
+              <td>A 自己 OOM</td>
+              <td>不會侵占 B 的 quota</td>
+            </tr>
+            <tr>
+              <td>只有 runtime policy，沒有 hard cap</td>
+              <td>A 可能繼續配置</td>
+              <td>B 之後可能 OOM</td>
+            </tr>
+            <tr>
+              <td>MIG</td>
+              <td>A 不可能越過硬體 slice 邊界</td>
+              <td>隔離性最高</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>產品上可以宣稱什麼？</h3>
+        <div class="quote">
+          AIDMS 支援 LLM instance-level vRAM quota，可限制單一 LLM instance 的 GPU memory 使用上限，避免單一服務過度佔用整張 GPU。
+        </div>
+      </section>
+
+      <section id="threads" data-search>
+        <h2>Active Thread Percentage vs GPU Core / SM 硬體隔離</h2>
+        <p class="lead">這兩者常被混淆，但差異很大。</p>
+
+        <div class="grid grid-2">
+          <div class="card">
+            <span class="tag orange">MPS Active Thread Percentage</span>
+            <h3>限制你最多派多少工作進 GPU</h3>
+            <p>它是軟體層控制，像是規定某個 LLM instance 最多可以讓多少比例的工作同時活躍。</p>
+            <p><strong>不是：</strong>固定把某幾組 SM 永遠分給這個 instance。</p>
+          </div>
+          <div class="card">
+            <span class="tag blue">MIG SM Isolation</span>
+            <h3>真的把 GPU 的廚師團隊分家</h3>
+            <p>MIG 會把部分 SM、vRAM 與相關硬體資源切給某個 instance。這比較像固定分配小 GPU。</p>
+            <p><strong>特性：</strong>隔離較強、效能較可預期，但彈性較低。</p>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>項目</th>
+              <th>MPS Active Thread Percentage</th>
+              <th>MIG SM 硬體隔離</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>控制方式</td>
+              <td>軟體限制</td>
+              <td>硬體切割</td>
+            </tr>
+            <tr>
+              <td>是否固定分配 SM</td>
+              <td>不是</td>
+              <td>是</td>
+            </tr>
+            <tr>
+              <td>是否等同小 GPU</td>
+              <td>不是</td>
+              <td>比較接近</td>
+            </tr>
+            <tr>
+              <td>可否保證 bandwidth</td>
+              <td>不行</td>
+              <td>較可預期</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="uid" data-search>
+        <h2>MPS 統一 UID / UUID 的影響</h2>
+        <p class="lead">技術提到使用 MPS 時，所有使用者的 UUID 或 UID 需要統一。這通常代表多個 instance 會以同一個 Linux 使用者身份，或連到同一個 MPS server。</p>
+
+        <h3>主要影響</h3>
+        <ul>
+          <li><strong>OS-level user isolation 變弱：</strong>Linux 看到的 owner 可能都是同一個 user。</li>
+          <li><strong>稽核責任要靠 AIDMS 補：</strong>不能只靠 Linux UID 分辨是哪個客戶或 instance。</li>
+          <li><strong>檔案權限要小心：</strong>同 UID 可能有相同檔案權限，要用 container、namespace、volume 隔離。</li>
+          <li><strong>故障可能擴散：</strong>同一 MPS server 內某個 client 的 fatal fault，可能影響其他 client。</li>
+          <li><strong>nvidia-smi 觀察可能不直覺：</strong>可能看到 MPS server，而不是每個 client 的清楚 attribution。</li>
+        </ul>
+
+        <div class="danger">
+          MPS 不應該被定位成跨租戶強隔離方案。若多個真正不同客戶共享同一個 MPS server，安全、稽核與故障隔離風險會變高。
+        </div>
+      </section>
+
+      <section id="project" data-search>
+        <h2>AIDMS Project 作為單一租戶邊界</h2>
+        <p class="lead">你們的設計是：AIDMS 有 Project，Project 底下納管完整數張 GPU，Project 視為單一租戶。這是非常關鍵的設計，可以大幅降低 MPS 的跨租戶問題。</p>
+
+        <div class="diagram">
+          <pre>AIDMS
+  ├─ Project A = Tenant A
+  │    ├─ GPU 0
+  │    ├─ GPU 1
+  │    └─ MPS Server A
+  │         ├─ LLM Instance A1
+  │         └─ LLM Instance A2
+  │
+  └─ Project B = Tenant B
+       ├─ GPU 2
+       └─ MPS Server B
+            ├─ LLM Instance B1
+            └─ LLM Instance B2</pre>
+        </div>
+
+        <h3>這樣可以避免什麼？</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>問題</th>
+              <th>Project 專屬 GPU + MPS 是否改善？</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>不同租戶共用同一個 MPS server</td>
+              <td>大幅改善，前提是 MPS server 不跨 Project</td>
+            </tr>
+            <tr>
+              <td>不同租戶互搶 vRAM</td>
+              <td>可避免，前提是 GPU 不跨 Project 共享</td>
+            </tr>
+            <tr>
+              <td>不同租戶 log / UID 混在一起</td>
+              <td>大幅改善，AIDMS 仍需做 project / instance mapping</td>
+            </tr>
+            <tr>
+              <td>不同租戶故障互相影響</td>
+              <td>大幅改善，故障範圍限制在 Project 內</td>
+            </tr>
+            <tr>
+              <td>同 Project 內 instance 搶 GPU core / bandwidth</td>
+              <td>仍存在</td>
+            </tr>
+            <tr>
+              <td>同 Project 內 fatal fault 影響其他 instance</td>
+              <td>仍可能</td>
+            </tr>
+            <tr>
+              <td>等同 MIG 硬體隔離</td>
+              <td>不等同</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="success">
+          如果 Project 被定義為單一租戶，且 GPU / MPS server 不跨 Project 共享，就可以避免大部分跨租戶安全、稽核與資源干擾問題。剩下要注意的是 Project 內多個 LLM instance 仍共享 GPU core、memory bandwidth、cache 與 MPS runtime。
+        </div>
+      </section>
+
+      <section id="product" data-search>
+        <h2>產品定位與對外說法</h2>
+        <h3>建議對外說法</h3>
+        <div class="quote">
+          AIDMS 以 Project 作為資源與租戶邊界。每個 Project 可納管一組專屬 GPU pool，並在 Project 內透過 MPS Sharing Mode 讓多個 LLM instance 共享 GPU 資源。此設計可在不跨租戶共享 GPU 的前提下，提供 vRAM quota 與彈性調度能力，兼顧 GPU 使用率與租戶邊界。若需要更嚴格的硬體隔離，AIDMS 可搭配 MIG 或 Dedicated GPU 模式。
+        </div>
+
+        <h3>短版產品說法</h3>
+        <div class="quote">
+          AIDMS 的 MPS 模式是在 Project 內共享 GPU，而不是跨 Project 共享 GPU。Project 作為單一租戶邊界，可有效避免跨租戶共用 MPS 所帶來的安全與稽核問題；但 Project 內的 instance 仍共享 GPU core、bandwidth 與 cache，因此若需要硬體級隔離，仍建議使用 MIG 或獨占 GPU。
+        </div>
+
+        <h3>可以宣稱</h3>
+        <ul>
+          <li>AIDMS 支援 LLM instance-level vRAM quota。</li>
+          <li>AIDMS 可限制單一 LLM instance 的 GPU memory 使用上限。</li>
+          <li>MPS Sharing Mode 適合 Project 內多個小型 LLM 服務彈性部署。</li>
+          <li>AIDMS 可提升 GPU 使用率，避免單一小模型長時間獨占整張 GPU。</li>
+          <li>Project 是 AIDMS 的主要資源與租戶邊界。</li>
+        </ul>
+
+        <h3>避免宣稱</h3>
+        <ul>
+          <li>不要說 MPS 等同 MIG。</li>
+          <li>不要說 MPS 提供完整硬體級隔離。</li>
+          <li>不要說可以保證每個 instance 固定 GPU core、bandwidth、cache。</li>
+          <li>不要說大模型可以穩定跨多個 MIG slice 做 production tensor parallel。</li>
+        </ul>
+      </section>
+
+      <section id="rules" data-search>
+        <h2>建議設計規則</h2>
+        <details open>
+          <summary>Rule 1：MPS Server 不跨 Project</summary>
+          <p>一個 MPS server 只服務一個 Project。不要讓 Project A 與 Project B 共用同一個 MPS server。</p>
+        </details>
+        <details open>
+          <summary>Rule 2：GPU 不跨 Project 共享</summary>
+          <p>如果 Project 是單一租戶邊界，一張 GPU 在同一時間最好只屬於一個 Project。MPS sharing 只在 Project 內發生。</p>
+        </details>
+        <details open>
+          <summary>Rule 3：Project 內才允許 MPS Sharing</summary>
+          <p>MPS 的高彈性與 vRAM quota 優勢適合用在同一信任邊界內，例如同一客戶、同一 Project、同一組服務。</p>
+        </details>
+        <details open>
+          <summary>Rule 4：強隔離需求使用 MIG 或 Dedicated GPU</summary>
+          <p>如果客戶要求固定 SLA、硬體級隔離、不同部門不互相影響，應提供 MIG Isolation Mode 或 Dedicated GPU Mode。</p>
+        </details>
+        <details open>
+          <summary>Rule 5：大模型跨卡用完整 GPU</summary>
+          <p>70B / 72B / 大型 VLM / MoE 需要 tensor parallel 時，建議使用完整 GPU 跨卡，不要用多個 MIG slice 拼 production 架構。</p>
+        </details>
+
+        <h3>最終定位</h3>
+        <pre>MPS = Dynamic Sharing
+MIG = Hard Isolation
+Dedicated GPU = Maximum Predictability
+AIDMS = Policy Layer + Project Boundary + GPU Governance</pre>
+      </section>
+
+      <div class="footer">
+        Generated as a structured HTML summary for AIDMS MPS / MIG architecture discussion.
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const searchBox = document.getElementById('searchBox');
+    const sections = [...document.querySelectorAll('[data-search]')];
+    const navLinks = [...document.querySelectorAll('nav a')];
+
+    searchBox.addEventListener('input', () => {
+      const q = searchBox.value.trim().toLowerCase();
+      sections.forEach(sec => {
+        const text = sec.innerText.toLowerCase();
+        sec.classList.toggle('hidden-by-search', q && !text.includes(q));
+      });
+    });
+
+    function expandAll() {
+      document.querySelectorAll('details').forEach(d => d.open = true);
+    }
+
+    function collapseAll() {
+      document.querySelectorAll('details').forEach(d => d.open = false);
+    }
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          navLinks.forEach(a => a.classList.remove('active'));
+          const active = document.querySelector(`nav a[href="#${entry.target.id}"]`);
+          if (active) active.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-35% 0px -55% 0px', threshold: 0 });
+
+    sections.forEach(sec => observer.observe(sec));
+  </script>
+</body>
+</html>

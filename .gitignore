@@ -1,0 +1,45 @@
+# 本機作業系統檔案
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 編輯器與 IDE 個人設定
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# 本機代理與工作環境狀態
+.codex/
+.agents/
+
+# 秘密設定與本機環境檔
+.env
+.env.*
+!.env.example
+!.env.template
+*.local
+*.secret
+*.secrets
+
+# 本機日誌、暫存與備份檔
+*.log
+*.tmp
+*.temp
+*.bak
+tmp/
+temp/
+
+# 可重建的開發工具環境與快取
+node_modules/
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+coverage/
+
+# 研究內容、HTML、Markdown、附件與 .gitkeep 不在忽略範圍內，應依研究價值提交。

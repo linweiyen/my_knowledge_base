@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>驗證 Fine-tuned LLM 的方法論</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=Noto+Serif+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAF7F0;
+    --bg-elevated: #FFFFFF;
+    --bg-code: #F2EFE6;
+    --text: #1A1815;
+    --text-muted: #5C5852;
+    --text-light: #8B8678;
+    --accent: #B8763A;
+    --accent-soft: #E8D4B0;
+    --accent-bg: #FBF3E5;
+    --border: #D4CFC2;
+    --border-soft: #E5E0D3;
+    --rule: #1A1815;
+
+    --font-display: 'Fraunces', 'Noto Serif TC', Georgia, serif;
+    --font-body: 'Source Serif 4', 'Noto Serif TC', Georgia, serif;
+    --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+    --font-sans: 'Noto Sans TC', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.75;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    counter-reset: section;
+  }
+
+  .container {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 80px 48px 120px;
+  }
+
+  @media (max-width: 720px) {
+    .container { padding: 48px 24px 80px; }
+    body { font-size: 16px; }
+  }
+
+  /* ─── Masthead ─── */
+  .masthead {
+    border-top: 3px double var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: 24px 0 32px;
+    margin-bottom: 56px;
+  }
+  .eyebrow {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-size: 56px;
+    font-weight: 500;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0 0 18px;
+    font-variation-settings: "opsz" 144;
+  }
+  .subtitle {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.4;
+  }
+  .meta {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    color: var(--text-light);
+    margin-top: 24px;
+    letter-spacing: 0.06em;
+  }
+
+  /* ─── Abstract ─── */
+  .abstract {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    padding: 28px 32px;
+    margin: 0 0 56px;
+  }
+  .abstract-label {
+    font-family: var(--font-sans);
+    font-size: 10px;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .abstract p { margin: 0; line-height: 1.65; font-size: 16.5px; }
+
+  /* ─── TOC ─── */
+  nav.toc {
+    border: 1px solid var(--border);
+    padding: 24px 32px;
+    margin: 0 0 64px;
+    font-family: var(--font-sans);
+  }
+  nav.toc .toc-label {
+    font-size: 10px;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  nav.toc ol {
+    counter-reset: tocitem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    columns: 2;
+    column-gap: 40px;
+  }
+  @media (max-width: 720px) {
+    nav.toc ol { columns: 1; }
+  }
+  nav.toc li {
+    counter-increment: tocitem;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: var(--text-muted);
+    break-inside: avoid;
+  }
+  nav.toc li::before {
+    content: counter(tocitem, decimal-leading-zero) " · ";
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+  }
+  nav.toc a {
+    color: var(--text);
+    border-bottom: none;
+    text-decoration: none;
+  }
+  nav.toc a:hover { color: var(--accent); }
+
+  /* ─── Section headings ─── */
+  h2 {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    margin: 80px 0 28px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  h2::before {
+    content: counter(section, decimal-leading-zero);
+    counter-increment: section;
+    color: var(--accent);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 22px;
+    margin-right: 16px;
+    vertical-align: 4px;
+    letter-spacing: 0;
+  }
+  h3 {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1.3;
+    margin: 48px 0 16px;
+  }
+  h4 {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin: 32px 0 12px;
+    color: var(--accent);
+  }
+
+  p { margin: 0 0 18px; }
+  strong { font-weight: 600; color: var(--text); }
+  em { font-style: italic; }
+
+  /* ─── Inline code & blocks ─── */
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.86em;
+    background: var(--bg-code);
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: var(--text);
+  }
+  pre {
+    background: var(--bg-code);
+    border: 1px solid var(--border-soft);
+    padding: 22px 26px;
+    overflow-x: auto;
+    margin: 24px 0;
+    font-size: 13.5px;
+    line-height: 1.65;
+    border-radius: 4px;
+  }
+  pre code {
+    background: none;
+    padding: 0;
+    font-size: inherit;
+  }
+
+  /* ─── Lists ─── */
+  ol, ul {
+    padding-left: 24px;
+    margin: 18px 0;
+  }
+  li { margin-bottom: 8px; }
+
+  /* ─── Problem cards ─── */
+  .problem {
+    border-top: 1px solid var(--border);
+    padding: 28px 0;
+  }
+  .problem:last-of-type {
+    border-bottom: 1px solid var(--border);
+  }
+  .problem h4 {
+    margin: 0 0 12px;
+    color: var(--text);
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .problem-num {
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--accent);
+    font-size: 14px;
+    margin-right: 10px;
+    letter-spacing: 0.05em;
+  }
+  .problem p:last-child { margin-bottom: 0; }
+
+  /* ─── Figure / diagram ─── */
+  .figure {
+    margin: 48px -16px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    padding: 36px 28px 24px;
+    border-radius: 4px;
+  }
+  @media (max-width: 720px) {
+    .figure { margin: 48px 0; padding: 24px 16px 16px; }
+  }
+  .figure svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .figure-caption {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 20px;
+    font-style: italic;
+    line-height: 1.5;
+  }
+
+  /* ─── Principles grid ─── */
+  .principles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    margin: 28px 0;
+    border-top: 1px solid var(--border);
+    border-left: 1px solid var(--border);
+  }
+  @media (max-width: 720px) {
+    .principles { grid-template-columns: 1fr; }
+  }
+  .principle {
+    padding: 22px 24px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .principle-num {
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--accent);
+    font-size: 13px;
+    display: block;
+    margin-bottom: 4px;
+    letter-spacing: 0.04em;
+  }
+  .principle h4 {
+    margin: 0 0 10px;
+    color: var(--text);
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .principle p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+
+  /* ─── Callouts ─── */
+  .callout {
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    padding: 22px 28px;
+    margin: 28px 0;
+  }
+  .callout-label {
+    font-family: var(--font-sans);
+    font-size: 10px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .callout p { margin: 0 0 12px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ─── Links ─── */
+  a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid var(--accent-soft);
+    transition: border-color 0.15s;
+  }
+  a:hover { border-bottom-color: var(--accent); }
+
+  /* ─── Prism overrides ─── */
+  pre[class*="language-"] {
+    background: var(--bg-code);
+    text-shadow: none;
+  }
+  code[class*="language-"], pre[class*="language-"] {
+    color: var(--text);
+    text-shadow: none;
+    font-family: var(--font-mono);
+  }
+  .token.comment, .token.prolog, .token.doctype, .token.cdata { color: #8B8678; font-style: italic; }
+  .token.string, .token.attr-value { color: #5B7548; }
+  .token.number, .token.boolean { color: #B8763A; }
+  .token.keyword, .token.builtin { color: #6B5B95; font-weight: 500; }
+  .token.function, .token.class-name { color: #2A4A60; font-weight: 500; }
+  .token.operator, .token.punctuation { color: #5C5852; }
+  .token.property, .token.tag { color: #A0432F; }
+  .token.regex { color: #8A5C2E; }
+
+  /* ─── Footer ─── */
+  footer {
+    margin-top: 96px;
+    padding-top: 28px;
+    border-top: 3px double var(--rule);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    color: var(--text-light);
+    text-align: center;
+    letter-spacing: 0.06em;
+    line-height: 1.6;
+  }
+  footer .colophon {
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="masthead">
+  <div class="eyebrow">Methodology · LLM Evaluation</div>
+  <h1>驗證 Fine-tuned LLM 的方法論</h1>
+  <p class="subtitle">以法律案件分類為例 ── 雙層評估架構的設計與實作</p>
+  <div class="meta">2026 · 技術備忘錄</div>
+</header>
+
+<div class="abstract">
+  <div class="abstract-label">摘要</div>
+  <p>Fine-tune 一個 LLM 來判斷法律案件違反哪些法規後，如何驗證它真的有學到東西？常見直覺是「再找一個 LLM 來當評審」，但若把標準答案直接告訴評審 LLM，會引入嚴重的判斷偏差。本文提出一個雙層評估架構：<strong>Layer A 用程式比對結構化輸出（法條清單），Layer B 用 blind 模式的 LLM-as-judge 評估推理品質</strong>，並參考 Claude Code 的 skill-creator grader 設計，給出可直接套用的 Python 實作與 prompt template。</p>
+</div>
+
+<nav class="toc">
+  <div class="toc-label">目錄</div>
+  <ol>
+    <li><a href="#bg">背景與動機</a></li>
+    <li><a href="#problems">三個常見錯誤做法</a></li>
+    <li><a href="#claude-code">Claude Code 的評估參考</a></li>
+    <li><a href="#architecture">雙層評估架構</a></li>
+    <li><a href="#layer-a">Layer A 實作：程式比對</a></li>
+    <li><a href="#layer-b">Layer B 實作：Judge LLM</a></li>
+    <li><a href="#notes">實作注意事項</a></li>
+    <li><a href="#conclusion">結論</a></li>
+  </ol>
+</nav>
+
+<!-- ═══════════════════════════════════════════ -->
+<section>
+<h2 id="bg">背景與動機</h2>
+
+<p>場景是這樣的：手上有約 100 個法律案件作為訓練資料，每個案件都標註了「違反哪些法規」作為標準答案。我們把這些資料拿去 fine-tune 一個 LLM，希望它能對新案件做出同樣的判斷。</p>
+
+<p>問題是：<strong>怎麼知道 fine-tune 之後的模型到底好不好？</strong></p>
+
+<p>單純看 training loss 不夠 — 它只反映模型對訓練資料的擬合程度，看不出泛化能力。人工逐一審查不可行 — 規模太大且不可重現。一個自然的想法是「用另一個 LLM 來當評審」，這在學術界叫做 <em>LLM-as-judge</em>。</p>
+
+<p>但這個方法用錯，會比沒驗證還危險：它會給你一份「看起來嚴謹」的報告，分數看起來很合理，但實際上失真。本文要解決的，就是怎麼設計這套評估流程才不會被自己騙到。</p>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<section>
+<h2 id="problems">三個常見錯誤做法</h2>
+
+<p>在介紹建議架構之前，先列出三個非常容易踩到的坑。這些做法都來自直覺，但每一個都會讓驗證結果失真。</p>
+
+<div class="problem">
+  <h4><span class="problem-num">問題 01</span>把標準答案先告訴評審 LLM</h4>
+  <p>最常見的直覺：「把案件、模型回覆、標準答案一起丟給評審 LLM，請它判斷模型的回覆對不對。」這個流程有個致命缺陷 — <strong>評審 LLM 一旦看過標準答案，就會傾向認為「跟標準答案像的就是對的」</strong>。它不是在獨立判斷，而是在做相似度檢查。在心理學上這叫 anchoring bias，在 LLM 評估文獻裡也有大量論文討論。</p>
+  <p>更可怕的是這種偏差很難察覺 — 分數看起來合理（因為模型輸出常常確實跟標準答案相似），但你失去了發現「模型推理薄弱但結論碰巧對」這類問題的能力。</p>
+</div>
+
+<div class="problem">
+  <h4><span class="problem-num">問題 02</span>用 LLM 評估結構化輸出</h4>
+  <p>如果模型輸出包含「違反法規清單」這種可枚舉的結構化資料，<strong>用程式做集合比對就好，不必動用 LLM</strong>。Precision、Recall、F1 這些指標客觀、可重現、便宜、快速，又不會有 LLM 的隨機性。</p>
+  <p>LLM-as-judge 應該保留給「推理過程是否合理」、「自然語言摘要的品質」這類程式判斷不了的部分。把每件事都丟給 LLM 評，是浪費，而且引入不必要的雜訊。</p>
+</div>
+
+<div class="problem">
+  <h4><span class="problem-num">問題 03</span>把驗證資料寫進 Skill 裡</h4>
+  <p>Skill 是給 LLM 使用的「操作手冊」，主要用途是在執行時提供指示。把驗證資料集（案件 + 標準答案）整包塞進一個 skill 雖然技術上行得通，但跟業界標準的評估流程不對齊。</p>
+  <p>標準做法是把 ground truth 放在獨立的資料檔（JSONL 或 CSV），skill 或 prompt 只用來描述「評估標準」（rubric）。資料跟邏輯分離，方便維護、擴充、版本控制。</p>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<section>
+<h2 id="claude-code">Claude Code 的評估參考</h2>
+
+<p>Anthropic 為 Claude Code 設計的 <code>skill-creator</code> 工具有一個完整的 evaluation 架構，值得借鏡。它的核心流程是：</p>
+
+<ol>
+  <li><strong>Eval set</strong>：每個 test case 包含一個 <code>prompt</code> 跟一串具體的 <code>expectations</code>（assertions）。</li>
+  <li><strong>Executor subagent</strong>：執行模型，產生 transcript 跟 output files。</li>
+  <li><strong>Grader subagent</strong>：讀取 transcript 跟 outputs，對每個 expectation 給 PASS 或 FAIL，並引用具體文字當證據。</li>
+  <li><strong>Variance analysis</strong>：同一個 input 跑三次，看穩定度。</li>
+  <li><strong>Train/test split</strong>：60/40 分割，避免 overfit 到「改 prompt 用的那批」測試案例。</li>
+</ol>
+
+<p>幾個值得學的關鍵設計：</p>
+
+<ul>
+  <li><strong>No partial credit</strong>：每個 assertion 只能是 PASS 或 FAIL，沒有 1–5 分這種尺度。簡化判斷，提高一致性。</li>
+  <li><strong>Evidence-based</strong>：要求 grader 引用具體文字，不能只說「我覺得對」。這擋掉大部分的氛圍判斷。</li>
+  <li><strong>Grader 同時 critique assertions</strong>：grader 不只判斷模型輸出，還會回頭挑剔測試本身 — 例如指出「這個 assertion 太寬鬆，瞎掰的輸出也會過」。這擋掉「測試項目本身有問題」的假陽性。</li>
+</ul>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<section>
+<h2 id="architecture">雙層評估架構</h2>
+
+<p>結合上述教訓，我們把評估拆成兩層平行進行：一層用程式，一層用 LLM，各管各的擅長領域。</p>
+
+<div class="figure">
+<svg viewBox="0 0 680 560" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>Fine-tuned LLM 雙層評估流程</title>
+<desc>從 test case 出發，經過 fine-tuned LLM 產生輸出，再透過兩層評估（程式比對 + Judge LLM）匯總到統合報告</desc>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+
+<!-- Test case -->
+<g>
+<rect x="200" y="40" width="280" height="60" rx="8" fill="#ECE8DF" stroke="#8B8678" stroke-width="0.5"/>
+<text x="340" y="68" text-anchor="middle" font-family="'Noto Sans TC',sans-serif" font-size="14" font-weight="500" fill="#3A3530">Test case (hold-out)</text>
+<text x="340" y="88" text-anchor="middle" font-family="'Noto Sans TC',sans-serif" font-size="12" fill="#5C5852">案件 + ground truth</text>
+</g>
+<line x1="340" y1="100" x2="340" y2="130" stroke="#5C5852" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+<!-- Fine-tuned LLM -->
+<g>
+<rect x="240" y="135" width="200" height="50" rx="8" fill="#E8E4F0" stroke="#6B5B95" stroke-width="0.5"/>
+<text x="340" y="165" text-anchor="middle" font-family="'Noto Sans TC',sans-serif" font-size="14" font-weight="500" fill="#2D2545">Fine-tuned LLM</text>
+</g>
+<line x1="340" y1="185" x2="340" y2="215" stroke="#5C5852" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+<!-- Model output -->
+<g>
+<rect x="200" y="215" width="280" height="60" rx="8" fill="#F5E6D0" stroke="#B8763A" stroke-width="0.5"/>
+<text x="340" y="243" text-anchor="middle" font-family="'Noto Sans TC',sans-serif" font-size="14" font-weight="500" fill="#6B4A1F">模型輸出</text>
+<text x="340" y="263" text-anchor="middle" font-family="'Noto Sans TC',sans-serif" font-size="12" fill="#8A6230">法條清單 + 推理過程</text>
+</g>
+
+<!-- Split arrows -->
+<path d="M 280 275 L 280 305 L 170 305 L 170 325" stroke="#5C5852" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+<path d="M 400 275 L 400 305 L 510 305 L 510 325" stroke="#5C5852" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+
+<!-- Layer A -->
+<g>
+<rect x="40" y="325" width="260" height="100" rx="8" fill="#DCEBE5" stroke="#4A7568" stroke-width="0.5"/>
+<text x="170" y="358" text-anchor="middle" font-family="'Noto Sans TC',sans-serif" font-size="14" font-weight="500" fill="#2A4A40">Layer A — 程式比對</text>
+<text x="170" y="383" text-anchor="middle" font-family="'Noto Sans TC',sans-serif" font-size="12" fill="#3D5C52">法條清單 vs ground truth</text>
+<text x="170" y="405" text-anchor="middle" font-family="'Noto Sans TC',sans-serif" font-size="12" fill="#3D5C52">→ Precision / Recall / F1</text>
+</g>
+
+<!-- Layer B -->
+<g>
+<rect x="380" y="325" width="260" height="100" rx="8" fill="#DDE3ED" stroke="#4A5B7E" stroke-width="0.5"/>
+<text x="510" y="358" text-anchor="middle" font-family="'Noto Sans TC',sans-serif" font-size="14" font-weight="500" fill="#2A3852">Layer B — Judge LLM</text>
+<text x="510" y="383" text-anchor="middle" font-family="'Noto Sans TC',sans-serif" font-size="12" fill="#3D4A66">案件 + 推理 (blind)</text>
+<text x="510" y="405" text-anchor="middle" font-family="'Noto Sans TC',sans-serif" font-size="12" fill="#3D4A66">→ Pass / Fail + 證據</text>
+</g>
+
+<!-- Convergent arrows -->
+<line x1="170" y1="425" x2="270" y2="485" stroke="#5C5852" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="510" y1="425" x2="410" y2="485" stroke="#5C5852" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+<!-- Aggregation -->
+<g>
+<rect x="200" y="485" width="280" height="55" rx="8" fill="#DCE5D5" stroke="#5B7548" stroke-width="0.5"/>
+<text x="340" y="510" text-anchor="middle" font-family="'Noto Sans TC',sans-serif" font-size="14" font-weight="500" fill="#2D4019">統合報告</text>
+<text x="340" y="530" text-anchor="middle" font-family="'Noto Sans TC',sans-serif" font-size="12" fill="#4A6232">指標 + 失敗案例分類</text>
+</g>
+</svg>
+<div class="figure-caption">Figure 1 ── 雙層評估流程。Ground truth 只供 Layer A 比對使用；Judge LLM 在 blind 模式下獨立判斷推理品質。</div>
+</div>
+
+<h3>為什麼分兩層？</h3>
+
+<p>因為「答對」跟「推理對」是兩件事，而且需要的驗證方法不同。</p>
+
+<ul>
+  <li><strong>答對</strong>（模型該講的法條有沒有講到、不該講的有沒有亂講）是個集合比對問題。它有明確答案，最適合用程式驗證 — 這就是 <strong>Layer A</strong>。</li>
+  <li><strong>推理對</strong>（從事實到結論的邏輯是否成立、有沒有遺漏爭點）是個品質判斷問題。它需要語意理解，最適合用 LLM 驗證 — 這就是 <strong>Layer B</strong>。</li>
+</ul>
+
+<p>關鍵設計是：<strong>ground truth 只進 Layer A，不進 Layer B</strong>。這樣 Judge LLM 在判斷推理品質時，是真的在獨立思考，而不是在跟答案比對。</p>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<section>
+<h2 id="layer-a">Layer A 實作：程式比對</h2>
+
+<p>Layer A 是純程式邏輯，沒有 LLM 介入。核心三步：<strong>抽法條 → 標準化 → 算集合分數</strong>。</p>
+
+<h3>核心程式碼</h3>
+
+<pre><code class="language-python">import re
+from dataclasses import dataclass
+from collections import Counter
+
+# ════════════════════════════════════════════════════════════
+# Step 1: 把法條從文字裡抽出來
+# ════════════════════════════════════════════════════════════
+# 處理常見變體：
+#   "公平交易法第19條"
+#   "公平交易法§19"
+#   "公平交易法 第 19 條第 1 項"
+# 統一變成: "公平交易法§19" 或 "公平交易法§19§1"
+
+ARTICLE_PATTERN = re.compile(
+    r"([\u4e00-\u9fff]+法)"          # 法規名稱
+    r"\s*"
+    r"(?:第\s*)?(\d+)\s*條"          # 第 X 條
+    r"(?:\s*第\s*(\d+)\s*項)?"       # 可選的第 X 項
+)
+
+def normalize_article(law, article, section=None, include_section=False):
+    """把單一法條變成 canonical 形式"""
+    base = f"{law.strip()}§{int(article)}"
+    if include_section and section:
+        base += f"§{int(section)}"
+    return base
+
+def extract_articles(text, include_section=False):
+    """從一段文字裡抽出所有法條，回傳 set"""
+    matches = ARTICLE_PATTERN.findall(text)
+    return {
+        normalize_article(law, art, sec, include_section)
+        for law, art, sec in matches
+    }
+
+# ════════════════════════════════════════════════════════════
+# Step 2: 算單一案件的 Precision / Recall / F1
+# ════════════════════════════════════════════════════════════
+
+@dataclass
+class CaseMetrics:
+    case_id: str
+    tp: set      # 模型講對的法條
+    fp: set      # 模型多講的（誤報）
+    fn: set      # 模型漏掉的
+    precision: float
+    recall: float
+    f1: float
+
+def score_case(case_id, predicted, gold):
+    tp = predicted &amp; gold
+    fp = predicted - gold
+    fn = gold - predicted
+
+    precision = len(tp) / len(predicted) if predicted else 0.0
+    recall    = len(tp) / len(gold)      if gold      else 0.0
+    f1 = (2 * precision * recall / (precision + recall)
+          if (precision + recall) else 0.0)
+
+    return CaseMetrics(case_id, tp, fp, fn, precision, recall, f1)
+
+# ════════════════════════════════════════════════════════════
+# Step 3: 跑整個 test set + 統合
+# ════════════════════════════════════════════════════════════
+
+def evaluate_dataset(test_cases, include_section=False):
+    results = []
+    for tc in test_cases:
+        predicted = extract_articles(tc["model_output"], include_section)
+        gold = set(tc["gold_articles"])
+        results.append(score_case(tc["case_id"], predicted, gold))
+
+    # Macro average（每個 case 權重一樣）
+    n = len(results)
+    return {
+        "per_case": results,
+        "macro_precision": sum(r.precision for r in results) / n,
+        "macro_recall":    sum(r.recall    for r in results) / n,
+        "macro_f1":        sum(r.f1       for r in results) / n,
+    }
+
+# ════════════════════════════════════════════════════════════
+# Step 4: 失敗案例分析（最有用的部分）
+# ════════════════════════════════════════════════════════════
+
+def failure_analysis(results):
+    """看模型常漏哪些法條、常多講哪些法條"""
+    most_missed = Counter()
+    most_hallucinated = Counter()
+
+    for r in results:
+        most_missed.update(r.fn)
+        most_hallucinated.update(r.fp)
+
+    return {
+        "top_missed":       most_missed.most_common(10),
+        "top_hallucinated": most_hallucinated.most_common(10),
+        "perfect_cases":    [r.case_id for r in results if r.f1 == 1.0],
+        "zero_cases":       [r.case_id for r in results if r.f1 == 0.0],
+    }</code></pre>
+
+<h3>使用範例</h3>
+
+<pre><code class="language-python">test_set = [
+    {
+        "case_id": "001",
+        "model_output": "本案 A 公司違反公平交易法第19條，並涉及個人資料保護法§20。",
+        "gold_articles": ["公平交易法§19", "個人資料保護法§20"]
+    },
+    {
+        "case_id": "002",
+        "model_output": "違反公平交易法第25條，民法第184條。",
+        "gold_articles": ["公平交易法§25"]   # 模型多講了民法§184 → FP
+    },
+]
+
+summary = evaluate_dataset(test_set)
+print(f"Macro F1: {summary['macro_f1']:.3f}")
+
+analysis = failure_analysis(summary['per_case'])
+print("最常漏掉的法條:", analysis['top_missed'])
+print("最常瞎掰的法條:", analysis['top_hallucinated'])</code></pre>
+
+<h3>設計選擇</h3>
+
+<div class="principles">
+  <div class="principle">
+    <span class="principle-num">01</span>
+    <h4>比對粒度</h4>
+    <p><code>include_section=False</code>（預設）只比對到「條」級別；<code>include_section=True</code>連「項」都要對。依資料標註粒度決定。</p>
+  </div>
+  <div class="principle">
+    <span class="principle-num">02</span>
+    <h4>Macro vs Micro</h4>
+    <p>Macro：每個案件先算 F1 再平均，權重相等。Micro：先加總所有 TP/FP/FN 再算 F1。實務上兩個都報。</p>
+  </div>
+  <div class="principle">
+    <span class="principle-num">03</span>
+    <h4>結構化輸出優先</h4>
+    <p>能控制模型 prompt 時，請它直接輸出 JSON 清單。Regex 是不得已的 fallback，準確度永遠不如直接 parse。</p>
+  </div>
+  <div class="principle">
+    <span class="principle-num">04</span>
+    <h4>法規別名表</h4>
+    <p>「個資法」=「個人資料保護法」、「公交法」=「公平交易法」。建立一張別名表做 canonicalization，否則相同法條會被當成不同。</p>
+  </div>
+</div>
+
+<h3>失敗案例分析才是重點</h3>
+
+<p>單看 macro F1 = 0.78 沒什麼用，重點是「哪些法條常被漏？哪些常被瞎掰？」<code>failure_analysis()</code> 回傳的 <code>top_missed</code> 跟 <code>top_hallucinated</code> 才是真正能幫你改進模型的訊號。如果某條法規一直被漏掉，可能訓練資料裡的相關案例太少；如果某條法規被亂掛，可能模型把它當成「萬用法條」 — 這些都需要回頭調訓練集。</p>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<section>
+<h2 id="layer-b">Layer B 實作：Judge LLM</h2>
+
+<p>Layer B 用 LLM 評估「推理過程」這個結構化比對搞不定的部分。關鍵原則 — <strong>Judge LLM 不能看 ground truth</strong>。它只看案件跟模型的回覆，憑案件本身判斷推理是否合理。</p>
+
+<h3>Prompt Template</h3>
+
+<pre><code class="language-text">你是法律推理品質評審員。給你一個案件跟一份分析報告，請評估這份分析的品質。
+
+【你會看到】
+- 案件描述
+- 一份分析（含「違反法規清單」+「推理過程」）
+
+【你不會看到】
+- 標準答案。這是故意的，請根據案件本身判斷分析是否合理，
+  而不是去猜「正確答案應該是什麼」。
+
+【評估準則】
+
+針對下列每一項，給 PASS / FAIL，並引用具體文字當證據：
+
+1. 事實認定
+   PASS：分析提到的事實，每一個都能在案件描述中找到對應
+   FAIL：出現案件沒提到的事實，或誤讀事實
+
+2. 法條適用
+   PASS：引用的每條法規，都有清楚對應的案件事實
+   FAIL：引用了不適用的法條，或法條與事實的連結太薄弱
+
+3. 推理邏輯
+   PASS：從事實到「違反 X 法規」的推論完整，
+        沒看過案件的人讀完也能跟上
+   FAIL：跳躍推論、循環論證、缺少關鍵推理步驟
+
+4. 遺漏爭點
+   PASS：案件中明顯該討論的法律議題都有觸及
+   FAIL：有明顯應討論但完全沒提的爭點
+
+【輸出格式】
+
+請輸出純 JSON，不要包 markdown code block：
+
+{
+  "criteria": [
+    {
+      "name": "事實認定",
+      "verdict": "PASS",
+      "evidence": "案件描述提到『A 公司未經 B 同意收集個資』，
+                   分析引用此事實",
+      "reasoning": "事實有對應，無編造"
+    },
+    ...其他三項
+  ],
+  "overall_pass": false,
+  "confidence": "high",
+  "notes": "整體觀察"
+}
+
+【硬規則】
+- 不可猜測「正確答案應該是什麼」
+- 不可因為「分析寫得很有自信」就判 PASS
+- 每一項 criteria 都必須引用具體文字
+- 無法判斷時，verdict 給 FAIL，confidence 給 low
+
+---
+
+【案件】
+{case_text}
+
+【分析】
+{model_output}</code></pre>
+
+<h3>五個關鍵設計決定</h3>
+
+<div class="principles">
+  <div class="principle">
+    <span class="principle-num">01</span>
+    <h4>用 PASS / FAIL，不用評分尺度</h4>
+    <p>1–5 分的 judge 會大量集中在 3–4 分（中庸偏好），實際區辨力很低。Binary 強迫做出判斷，雜訊小很多，跟 Claude Code grader 一致。</p>
+  </div>
+  <div class="principle">
+    <span class="principle-num">02</span>
+    <h4>強制 cite evidence</h4>
+    <p>沒 evidence 的 PASS 是垃圾資料 — judge 可能只是憑感覺。要求引用具體文字，能擋掉一大半的氛圍判斷。</p>
+  </div>
+  <div class="principle">
+    <span class="principle-num">03</span>
+    <h4>明寫「不要猜正確答案」</h4>
+    <p>LLM 訓練資料裡有很多「評估 X 是否正確」的範例，會誘導它去猜答案。明文禁止能顯著降低這種傾向。</p>
+  </div>
+  <div class="principle">
+    <span class="principle-num">04</span>
+    <h4>四項剛剛好</h4>
+    <p>太多 criteria 會讓 judge 分散注意力。三到五項是甜蜜點。這四項刻意涵蓋：事實層 → 法條層 → 推理層 → 完備性，從窄到寬。</p>
+  </div>
+  <div class="principle">
+    <span class="principle-num">05</span>
+    <h4>純 JSON 輸出</h4>
+    <p>明寫「不要包 markdown code block」否則某些模型會自動加 fence，後續 parse 會壞掉。<code>temperature=0</code> 也能提高穩定度。</p>
+  </div>
+</div>
+
+<h3>Python 呼叫範例</h3>
+
+<pre><code class="language-python">import anthropic, json
+
+client = anthropic.Anthropic()
+
+def judge_case(case_text, model_output):
+    prompt = JUDGE_PROMPT_TEMPLATE.format(
+        case_text=case_text,
+        model_output=model_output
+    )
+    resp = client.messages.create(
+        model="claude-opus-4-7",   # judge 用強模型
+        max_tokens=2000,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0,             # 評分要穩定
+    )
+    return json.loads(resp.content[0].text)</code></pre>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<section>
+<h2 id="notes">實作注意事項</h2>
+
+<p>方法對了還不夠，幾個容易被忽略但會影響結果可信度的細節：</p>
+
+<div class="callout">
+  <div class="callout-label">注意 · Hold-out test set</div>
+  <p>Fine-tuning 用過的案件<strong>絕對不能</strong>拿來測，這會讓你測的是「背題能力」而非「推理能力」。從 100 個案件中至少留出 20–30 個作為 hold-out test set，這批資料模型完全沒看過。</p>
+</div>
+
+<div class="callout">
+  <div class="callout-label">注意 · Judge 模型選擇</div>
+  <p>Judge LLM 必須跟 fine-tuned model 的 base 不同。例如 fine-tune 的是 Llama，judge 就用 Claude 或 GPT。否則會有 self-preference bias — 模型傾向偏好跟自己風格相似的輸出。</p>
+</div>
+
+<div class="callout">
+  <div class="callout-label">注意 · Variance 分析</div>
+  <p>同一個案件讓 judge 跑三次，取多數決。如果三次結果分歧，這個案件單獨拉出來人工複核，不要直接採信任何一次。這跟 Claude Code skill-creator 跑 3 次取樣本是同樣的設計。</p>
+</div>
+
+<div class="callout">
+  <div class="callout-label">注意 · 人類校準</div>
+  <p>挑 10–20 個案件先讓人類專家評估一次當對照，看 judge 的判斷跟人類有多接近。如果 agreement &lt; 70%，rubric 要再調 — 可能是評估準則寫得不夠清楚，或是 LLM 對該領域理解不足。</p>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<section>
+<h2 id="conclusion">結論</h2>
+
+<p>用 LLM 驗證 LLM 是個強大的工具，但用錯了會比沒用更糟 — 它會給你假的安全感。本文的核心主張可以濃縮成三句話：</p>
+
+<ol>
+  <li><strong>分工要清楚。</strong>結構化輸出用程式比對，自然語言推理用 LLM 評審。不要把所有事情丟給同一個工具。</li>
+  <li><strong>Judge 必須 blind。</strong>標準答案只給 Layer A 的程式比對；Judge LLM 在不知道答案的狀態下獨立判斷，否則它只是在做相似度檢查。</li>
+  <li><strong>失敗案例分析比平均分更有用。</strong>Macro F1 = 0.78 只是個數字；「哪些法條常被漏掉」才能告訴你下一步要怎麼改進。</li>
+</ol>
+
+<p>整套架構不複雜，可以在一個下午搭起來。但它能讓你對 fine-tuned model 的能力有真實的、可信的、可重現的了解，這是 fine-tune 流程裡最容易被跳過、卻最重要的一環。</p>
+</section>
+
+<footer>
+  <div class="colophon">— 完 —</div>
+  <div>排版採用 Fraunces、Source Serif 4、Noto Serif TC、JetBrains Mono</div>
+</footer>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+</body>
+</html>

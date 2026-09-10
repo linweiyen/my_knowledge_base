@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Harness Engineering 與 Context Engineering 深度研究報告</title>
+  <style>
+    :root{
+      --bg:#f6f1e8; --paper:#fbf8f2; --ink:#2d2a26; --muted:#6e675f;
+      --line:#d7ccbd; --accent:#7c5c3e; --accent2:#a3886a; --soft:#efe6d8;
+      --shadow:0 16px 40px rgba(52,42,32,.07); --radius:20px;
+      --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      --serif:"Iowan Old Style","Palatino Linotype","Noto Serif TC","Songti TC",serif;
+      --sans:Inter,"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+    }
+    *{box-sizing:border-box} html{scroll-behavior:smooth}
+    body{margin:0;color:var(--ink);font-family:var(--sans);line-height:1.78;letter-spacing:.01em;background:radial-gradient(circle at 15% 0%,rgba(163,136,106,.16),transparent 30%),radial-gradient(circle at 90% 10%,rgba(124,92,62,.07),transparent 25%),var(--bg)}
+    .page{max-width:1160px;margin:auto;padding:34px 18px 84px}
+    .hero,section{background:rgba(251,248,242,.86);border:1px solid rgba(215,204,189,.86);box-shadow:var(--shadow);border-radius:28px;padding:26px 24px;margin:22px 0;position:relative;overflow:hidden}
+    .hero:after{content:"";position:absolute;right:-60px;bottom:-70px;width:220px;height:220px;border-radius:999px;border:1px solid rgba(124,92,62,.13)}
+    h1,h2,h3{font-family:var(--serif);line-height:1.22;color:#241f1a;margin:0 0 .75rem} h1{font-size:clamp(2rem,4vw,3.35rem)} h2{font-size:clamp(1.45rem,2.4vw,2.05rem);margin-top:.2rem} h3{font-size:1.18rem;margin-top:1.2rem}
+    p{margin:.75rem 0}.lede{color:var(--muted);font-size:1.04rem;max-width:80ch}.meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.chip{border:1px solid var(--line);background:rgba(239,230,216,.68);border-radius:999px;padding:6px 12px;color:var(--muted);font-size:.92rem}.toc{margin-top:18px;border:1px dashed var(--line);background:rgba(239,230,216,.62);border-radius:16px;padding:14px 16px}.toc a{color:var(--accent);text-decoration:none;margin-right:14px;display:inline-block}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.card{grid-column:span 4;background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:16px}.card h3{margin-top:0}.num{font-family:var(--serif);font-size:1.8rem;color:var(--accent);line-height:1}.note,.warn{border-radius:15px;padding:13px 15px;margin:16px 0}.note{background:var(--soft);border-left:4px solid var(--accent2)}.warn{background:#f4eee5;border-left:4px solid #8f6d4d}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:16px;background:var(--paper);margin:15px 0}table{width:100%;border-collapse:collapse;min-width:850px;font-size:.94rem}th,td{padding:12px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}th{background:#f3eadc;font-family:var(--serif)}tr:last-child td{border-bottom:0}
+    .svg-frame{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:10px;margin:16px 0;overflow:auto}svg{max-width:100%;height:auto;display:block}.component{border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,#fbf8f2,#f7f1e8);padding:16px;margin:14px 0}.mini-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.mini{background:#f7f1e8;border:1px solid var(--line);border-radius:14px;padding:11px}.mini strong{display:block;font-family:var(--serif);margin-bottom:4px;color:#3b3026}
+    details{border:1px solid var(--line);border-radius:16px;background:var(--paper);padding:11px 13px;margin:12px 0}summary{cursor:pointer;font-weight:700;color:#2c241d}code,pre{font-family:var(--mono);font-size:.92rem}pre{white-space:pre-wrap;background:#221d19;color:#f5ede2;border-radius:15px;padding:16px;overflow:auto;line-height:1.55}.code-wrap{position:relative;margin:14px 0}.copy{position:absolute;right:10px;top:10px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;border-radius:10px;padding:6px 10px;cursor:pointer}.tok-c{color:#b8ab96}.tok-s{color:#d9c28e}.tok-k{color:#f0b484}.tok-f{color:#8fd2c8}.tok-m{color:#b9d6ff}.tok-p{color:#ffdbc6}.source{font-size:.88rem;color:var(--muted)}.source a{color:var(--accent)}
+    @media(max-width:900px){.card{grid-column:span 6}.mini-grid{grid-template-columns:1fr}}@media(max-width:640px){.page{padding:18px 12px 64px}.hero,section{padding:18px 14px}.card{grid-column:span 12}.toc a{display:block;margin:4px 0}}
+  </style>
+</head>
+<body>
+<div class="page">
+<header class="hero" id="top">
+  <h1>AI Harness Engineering 與 Context Engineering 深度研究報告</h1>
+  <p class="lede">本報告整理 Stanford CS224G「Context Engineering」教材、Stanford UIT prompt engineering 教材、OpenAI / Anthropic / Google / Microsoft / Databricks 官方文件，以及 RAG、ReAct、Toolformer、Self-Refine 等學術來源，說明 <strong>harness engineering</strong> 到底是什麼、為什麼它不只是 prompt engineering，以及你記得的「背景、目標、完成定義」五項查核點應如何放入一個生產級 AI agent 設計流程。</p>
+  <div class="meta"><span class="chip">語言：繁體中文</span><span class="chip">日期：2026-07-03</span><span class="chip">風格：侘寂 / 離線 HTML</span><span class="chip">重點：Prompt → Context → Harness</span></div>
+  <nav class="toc"><a href="#summary">摘要</a><a href="#definition">定義</a><a href="#stanford">Stanford 對照</a><a href="#architecture">架構</a><a href="#patterns">元件與模式</a><a href="#cases">案例</a><a href="#checklist">檢核表</a><a href="#sources">參考來源</a></nav>
+</header>
+
+<section id="summary">
+  <h2>一、執行摘要</h2>
+  <div class="grid">
+    <div class="card"><div class="num">01</div><h3>Prompt engineering 沒有消失，但已不夠</h3><p>Prompt engineering 處理「怎麼問」。它仍然重要，但當任務變成多步驟、需要查資料、呼叫工具、寫檔案、檢查結果時，單靠 prompt 會把太多責任壓在一段文字上。</p></div>
+    <div class="card"><div class="num">02</div><h3>Context engineering 是資訊供給架構</h3><p>Stanford CS224G 將 context engineering 視為比 prompt 更大的問題：模型在生成前到底看見哪些 system instruction、history、tools、RAG、user data 與最後 prompt。</p></div>
+    <div class="card"><div class="num">03</div><h3>Harness engineering 是外層執行基座</h3><p>Harness engineering 再往外一層，設計模型周圍的 runtime：任務規格、context selection、tools、permissions、memory、verification、observability、human approval 與 completion criteria。</p></div>
+  </div>
+  <div class="note"><strong>一句話定義：</strong>AI Harness Engineering 是把 AI 從「會回答的模型」變成「可安全執行、可驗證完成、可觀測與可治理的任務系統」的工程實踐。</div>
+</section>
+
+<section id="definition">
+  <h2>二、什麼是 Harness Engineering？</h2>
+  <p>「Harness」原意是馬具或安全帶，也可指測試或執行某個系統的支撐裝置。在 AI agent 語境裡，harness 是模型外面的工程層：它提供任務、上下文、工具、記憶、沙箱、權限、驗證與觀測。換句話說，模型是推理核心，harness 是讓它可靠工作的作業環境。</p>
+  <div class="table-wrap"><table><thead><tr><th>層級</th><th>關注問題</th><th>典型產物</th><th>失敗時會發生什麼</th></tr></thead><tbody>
+    <tr><td>Prompt Engineering</td><td>如何寫出清楚、可預期的指令？</td><td>system prompt、user prompt、few-shot examples</td><td>格式跑掉、理解錯任務、回覆泛泛而談</td></tr>
+    <tr><td>Task Briefing</td><td>任務本身是否說清楚？</td><td>背景、目標、限制、輸入、完成定義</td><td>模型做了看似合理但不是你要的事</td></tr>
+    <tr><td>Context Engineering</td><td>模型這一回合應該看到哪些資訊？</td><td>compiled context、RAG snippets、tools schema、history summary</td><td>拿錯資料、漏資料、token 爆掉、被舊資訊誤導</td></tr>
+    <tr><td>Harness Engineering</td><td>整個 agent 如何安全、可驗證地執行任務？</td><td>orchestrator、tool gateway、policy engine、verifier、trace</td><td>提早宣告完成、亂呼叫工具、無法追查錯誤、權限外洩</td></tr>
+  </tbody></table></div>
+  <p>因此，harness engineering 不等於「寫更長 prompt」。它更像是在做一套 AI 任務執行平台：先把任務定義清楚，再建構上下文，再讓模型做推理與工具選擇，最後用外部機制判斷是否真的完成。</p>
+</section>
+
+<section id="stanford">
+  <h2>三、Stanford 的五個 Context Engineering 槓桿，與你記得的五個查核點</h2>
+  <p>Stanford CS224G Lecture 6 的核心概念是：不要只調 prompt，而要工程化模型周圍的輸入。該教材提出 application builder 可以控制的五個 levers：</p>
+  <div class="grid">
+    <div class="card"><h3>1. Personas / Custom Instructions</h3><p>定義角色、語氣、長期偏好與不可覆寫的高層規則。</p></div>
+    <div class="card"><h3>2. Available Tools</h3><p>定義模型可呼叫哪些工具、何時呼叫、參數格式與風險邊界。</p></div>
+    <div class="card"><h3>3. RAG / Datastore Connections</h3><p>定義模型如何取得外部知識、企業文件、資料庫或搜尋結果。</p></div>
+    <div class="card"><h3>4. User-Submitted Data</h3><p>處理使用者上傳檔案、圖片、表格、程式碼與當前任務資料。</p></div>
+    <div class="card"><h3>5. Your Prompt</h3><p>最後一層任務指令，負責明確提出本次要完成的事。</p></div>
+    <div class="card"><h3>關鍵句</h3><p><strong>Don’t just tweak the prompt. Engineer the inputs that surround it.</strong></p></div>
+  </div>
+  <div class="warn"><strong>研究判斷：</strong>你記得的「背景、目標、什麼叫完成」比較像 Task Briefing Checklist，不是 Stanford 那頁五個 levers 的原文；但兩者可以完整對照。</div>
+  <div class="table-wrap"><table><thead><tr><th>你記得的查核點</th><th>它回答的問題</th><th>對應 Stanford lever</th><th>放在 harness 的位置</th></tr></thead><tbody>
+    <tr><td>背景 Background</td><td>為什麼要做？目前情境是什麼？</td><td>Personas、RAG、User Data</td><td>Brief compiler + Context builder</td></tr>
+    <tr><td>目標 Goal</td><td>這次真正要產生什麼結果？</td><td>Your Prompt</td><td>Task specification</td></tr>
+    <tr><td>限制 Constraints</td><td>哪些規則不可違反？</td><td>Custom Instructions、Tool policy</td><td>Policy engine + Guardrails</td></tr>
+    <tr><td>輸入 / 資源 Inputs</td><td>可以用哪些資料、工具、API、文件？</td><td>Tools、RAG、User Data</td><td>Tool gateway + Retrieval layer</td></tr>
+    <tr><td>完成定義 Definition of Done</td><td>什麼狀態才算完成？</td><td>Stanford 五槓桿之外</td><td>Verifier + Evaluator + Human approval</td></tr>
+  </tbody></table></div>
+</section>
+
+<section id="architecture">
+  <h2>四、生產級 AI Harness 架構</h2>
+  <div class="svg-frame">
+  <svg viewBox="0 0 1180 540" role="img" aria-label="AI Harness Architecture">
+    <rect x="20" y="20" width="1140" height="500" rx="30" fill="#fbf8f2" stroke="#d7ccbd"/>
+    <rect x="50" y="70" width="190" height="86" rx="18" fill="#efe6d8" stroke="#c8baa5"/><text x="145" y="108" text-anchor="middle" font-family="serif" font-size="24">User Request</text><text x="145" y="132" text-anchor="middle" font-size="13" fill="#6e675f">需求 / 問題 / 任務</text>
+    <rect x="300" y="55" width="220" height="96" rx="18" fill="#f4eadb" stroke="#c7b49d"/><text x="410" y="93" text-anchor="middle" font-family="serif" font-size="24">Brief Compiler</text><text x="410" y="120" text-anchor="middle" font-size="13" fill="#6e675f">背景 / 目標 / 限制 / Done</text>
+    <rect x="300" y="185" width="220" height="122" rx="18" fill="#edf1f4" stroke="#b8c3cf"/><text x="410" y="224" text-anchor="middle" font-family="serif" font-size="24">Context Builder</text><text x="410" y="250" text-anchor="middle" font-size="13" fill="#6e675f">RAG / history / tools / files</text><text x="410" y="272" text-anchor="middle" font-size="13" fill="#6e675f">compression / caching</text>
+    <rect x="590" y="125" width="220" height="110" rx="20" fill="#eef4e6" stroke="#b8c6a8"/><text x="700" y="166" text-anchor="middle" font-family="serif" font-size="26">Orchestrator</text><text x="700" y="193" text-anchor="middle" font-size="13" fill="#6e675f">agent loop / retries / handoff</text>
+    <rect x="860" y="100" width="235" height="145" rx="22" fill="#f4e8e8" stroke="#c7b0b0"/><text x="978" y="141" text-anchor="middle" font-family="serif" font-size="26">Model</text><text x="978" y="168" text-anchor="middle" font-size="13" fill="#6e675f">reason / plan / choose tool</text><text x="978" y="190" text-anchor="middle" font-size="13" fill="#6e675f">generate response</text>
+    <rect x="840" y="305" width="120" height="76" rx="16" fill="#f7f1e8" stroke="#d7ccbd"/><text x="900" y="350" text-anchor="middle" font-family="serif" font-size="22">Tools</text>
+    <rect x="985" y="305" width="120" height="76" rx="16" fill="#f7f1e8" stroke="#d7ccbd"/><text x="1045" y="350" text-anchor="middle" font-family="serif" font-size="22">RAG</text>
+    <rect x="590" y="345" width="220" height="105" rx="20" fill="#efe6d8" stroke="#c8baa5"/><text x="700" y="384" text-anchor="middle" font-family="serif" font-size="24">Verification</text><text x="700" y="411" text-anchor="middle" font-size="13" fill="#6e675f">tests / judge / approval</text>
+    <rect x="300" y="358" width="220" height="92" rx="18" fill="#f3f0f7" stroke="#c4b6d3"/><text x="410" y="395" text-anchor="middle" font-family="serif" font-size="24">Observability</text><text x="410" y="420" text-anchor="middle" font-size="13" fill="#6e675f">trace / cost / latency / defects</text>
+    <defs><marker id="a" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#8d724f"/></marker></defs>
+    <path d="M240 113 L300 103" stroke="#8d724f" stroke-width="3" fill="none" marker-end="url(#a)"/><path d="M410 151 L410 185" stroke="#8d724f" stroke-width="3" fill="none" marker-end="url(#a)"/><path d="M520 246 L590 180" stroke="#7d8fa3" stroke-width="3" fill="none" marker-end="url(#a)"/><path d="M810 180 L860 172" stroke="#94a278" stroke-width="3" fill="none" marker-end="url(#a)"/><path d="M978 245 L978 305" stroke="#aa7f7f" stroke-width="3" fill="none" marker-end="url(#a)"/><path d="M900 305 L790 220" stroke="#aa7f7f" stroke-width="3" fill="none" marker-end="url(#a)"/><path d="M1045 305 L790 225" stroke="#aa7f7f" stroke-width="3" fill="none" marker-end="url(#a)"/><path d="M700 345 L700 235" stroke="#8d724f" stroke-width="3" fill="none" marker-end="url(#a)"/><path d="M590 400 L520 402" stroke="#8d724f" stroke-width="3" fill="none" marker-end="url(#a)"/>
+  </svg>
+  </div>
+  <p>這個架構把 AI 任務分成四段：<strong>Brief</strong> 定義要做什麼，<strong>Context</strong> 決定模型看見什麼，<strong>Orchestration</strong> 決定模型與工具如何互動，<strong>Verification</strong> 決定是否真的完成。</p>
+  <div class="code-wrap"><button class="copy">複製</button><pre><code class="language-typescript">type Brief = {
+  background: string;
+  goal: string;
+  constraints: string[];
+  resources: string[];
+  definitionOfDone: string[];
+};
+
+async function runAgent(userInput: string, userId: string) {
+  const brief = await compileBrief(userInput);
+  const context = await buildContext({
+    brief,
+    persona: await loadPersona(userId),
+    history: await summarizeHistory(userId),
+    retrieved: await retrieveDocuments(brief.goal),
+    tools: selectTools(brief.goal)
+  });
+  const step = await model.respond({ brief, context });
+  const result = await executeOrRespond(step);
+  return verifyAgainstDefinitionOfDone(result, brief.definitionOfDone);
+}</code></pre></div>
+</section>
+
+<section id="patterns">
+  <h2>五、核心元件與工程模式</h2>
+  <div class="component"><h3>1. Task Specification / Brief Compiler</h3><p>把模糊需求轉成可執行規格。這一層最常被忽略，卻最容易造成 agent 做錯方向。</p><div class="mini-grid"><div class="mini"><strong>好 brief</strong> 背景、目標、限制、輸入、完成定義都明確。</div><div class="mini"><strong>壞 brief</strong> 只有「幫我做一下」或「整理一下」，沒有邊界與驗收。</div></div></div>
+  <div class="component"><h3>2. Context Selection / Context Builder</h3><p>決定每一回合要放入哪些 system instructions、歷史摘要、RAG 結果、附件、工具 schema。重點不是塞滿 context window，而是高訊號、低噪音。</p></div>
+  <div class="component"><h3>3. Tool Gateway / Permission Layer</h3><p>工具讓 agent 可以查資料、寫檔、呼叫 API、發送通知。但所有有副作用的工具都應有 policy gate、scope check、human confirmation 或 sandbox。</p></div>
+  <div class="component"><h3>4. Verification / Definition of Done</h3><p>「完成」不應由模型自稱，而應由外部測試、schema validation、groundedness evaluator、LLM judge 或 human sign-off 判定。</p></div>
+  <div class="component"><h3>5. Observability / Trace</h3><p>生產系統必須知道每次 run 的 prompt/context 版本、檢索來源、工具呼叫、token cost、latency、錯誤與人工介入紀錄。</p></div>
+  <div class="code-wrap"><button class="copy">複製</button><pre><code class="language-yaml">ai_task_brief:
+  background: "目前情境、使用者、系統或文件脈絡"
+  goal: "這次要達成的具體結果"
+  constraints:
+    - "不可違反的格式、安全、法規或業務限制"
+  resources:
+    - "可使用的資料、文件、API、工具"
+  definition_of_done:
+    - "輸出需包含哪些內容"
+    - "需要通過哪些測試或驗證"
+    - "何時需要人類確認"</code></pre></div>
+</section>
+
+<section id="cases">
+  <h2>六、案例研究</h2>
+  <details open><summary>OpenAI Codex：Harness Engineering 的代表案例</summary><p>OpenAI 在 Codex 相關文章中明確使用「harness engineering」語彙，說明在 agent-first 開發中，工程師的角色從直接寫每一行程式，轉向建構 repo knowledge、tests、lints、invariants、review loops 與可讀的 agent environment。這說明 coding agent 的能力不只取決於模型，也取決於周圍的 harness 是否讓模型看得懂、改得動、驗得過。</p></details>
+  <details><summary>Spotify Honk：Context Engineering + Verification Loops</summary><p>Spotify 的 background coding agent 經驗顯示，早期讓使用者手動挑選 context 很容易失敗；後來透過更好的 context engineering、verifier loop、LLM judge 與 sandbox，讓 agent 能處理大規模 PR。這裡的關鍵不是更花俏的 prompt，而是 context 與 done criteria 外部化。</p></details>
+  <details><summary>Air India AI.g：企業客服 Agent</summary><p>Air India 使用 Azure OpenAI、RAG、企業系統整合與內容安全，打造能處理大量客服問題的虛擬助理。這種系統的核心不是聊天，而是把檢索、資料庫、API、安全與升級流程整合為完整 harness。</p></details>
+  <details><summary>POSCO / Repo Prompt：把 Context Builder 獨立出來</summary><p>POSCO 與 Repo Prompt 的案例都顯示，先讓一個 context-building process 整理大量文件或程式庫，再交給 reasoning model 深度分析，是提升品質與降低成本的重要模式。</p></details>
+</section>
+
+<section id="checklist">
+  <h2>七、可落地 Harness Engineering 檢核表</h2>
+  <div class="table-wrap"><table><thead><tr><th>檢查項</th><th>要問的問題</th><th>最低可接受狀態</th><th>常見失敗訊號</th></tr></thead><tbody>
+    <tr><td>背景</td><td>模型是否知道任務脈絡、使用者角色、資料範圍？</td><td>有明確背景與 scope</td><td>回覆泛化、忽略企業脈絡</td></tr>
+    <tr><td>目標</td><td>這次任務是否能用一句話說清楚？</td><td>有單一主要目標與輸出型別</td><td>模型自行擴張任務範圍</td></tr>
+    <tr><td>限制</td><td>哪些格式、安全、權限、商業規則不可違反？</td><td>限制放入 system / policy 層</td><td>格式跑掉、越權工具呼叫</td></tr>
+    <tr><td>資源</td><td>可用哪些文件、工具、API、資料庫？</td><td>資源白名單與最小權限</td><td>檢索錯誤、工具過多、資料污染</td></tr>
+    <tr><td>完成定義</td><td>什麼外部條件成立才算完成？</td><td>有 verifier / grader / human approval</td><td>模型提早宣告成功</td></tr>
+    <tr><td>觀測</td><td>是否能追蹤每次 run 的上下文、工具、成本與錯誤？</td><td>有 trace ID 與 dashboard</td><td>錯誤不可重現、成本暴衝</td></tr>
+  </tbody></table></div>
+  <div class="note"><strong>實務建議：</strong>先從 Task Briefing Checklist 開始，把「背景、目標、限制、資源、完成定義」標準化；接著建立 context builder；最後才導入 tool gateway、verifier、trace 與 policy engine。這樣可以避免團隊一開始就陷入 agent framework 選型，而忽略真正決定品質的任務與上下文設計。</div>
+</section>
+
+<section id="sources">
+  <h2>八、主要參考來源</h2>
+  <ol class="source">
+    <li>Stanford CS224G 2026 Lecture 6 — More Context Engineering: <a href="https://web.stanford.edu/class/cs224g/lectures/CS%20224G%202026%20Lecture%206%20-%20More%20Context%20Engineering.pdf">web.stanford.edu</a></li>
+    <li>Stanford UIT — AI Demystified: What is Prompt Engineering?: <a href="https://uit.stanford.edu/service/techtraining/ai-demystified/prompt-engineering">uit.stanford.edu</a></li>
+    <li>OpenAI — Harness engineering: leveraging Codex in an agent-first world: <a href="https://openai.com/index/harness-engineering/">openai.com</a></li>
+    <li>OpenAI — A practical guide to building AI agents: <a href="https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/">openai.com</a></li>
+    <li>Anthropic — Effective context engineering for AI agents: <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">anthropic.com</a></li>
+    <li>Databricks — What is an AI Agent Harness?: <a href="https://www.databricks.com/blog/ai-harness">databricks.com</a></li>
+    <li>arXiv — A Runtime Substrate for Foundation-Model Software Agents: <a href="https://arxiv.org/abs/2605.13357">arxiv.org</a></li>
+    <li>arXiv — Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks: <a href="https://arxiv.org/abs/2005.11401">arxiv.org</a></li>
+    <li>arXiv — ReAct: Synergizing Reasoning and Acting in Language Models: <a href="https://arxiv.org/abs/2210.03629">arxiv.org</a></li>
+    <li>arXiv — Toolformer: Language Models Can Teach Themselves to Use Tools: <a href="https://arxiv.org/abs/2302.04761">arxiv.org</a></li>
+    <li>Microsoft — Air India Azure OpenAI customer story: <a href="https://www.microsoft.com/en/customers/story/19768-air-india-azure-open-ai-service">microsoft.com</a></li>
+    <li>Spotify Engineering — Context engineering for background coding agents: <a href="https://engineering.atspotify.com/2025/11/context-engineering-background-coding-agents-part-2">engineering.atspotify.com</a></li>
+  </ol>
+</section>
+</div>
+<script>
+(function(){
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+  function hi(s){let h=esc(s);h=h.replace(/(#.*$|\/\/.*$)/gm,'<span class="tok-c">$1</span>');h=h.replace(/("([^"\\]|\\.)*"|'([^'\\]|\\.)*')/g,'<span class="tok-s">$1</span>');h=h.replace(/\b(async|await|function|return|const|let|var|if|else|for|while|try|catch|class|import|from|export|type|def|raise|in|as)\b/g,'<span class="tok-k">$1</span>');h=h.replace(/\b([A-Za-z_][A-Za-z0-9_]*)\s*(?=\()/g,'<span class="tok-f">$1</span>');h=h.replace(/\b(\d+(\.\d+)?)\b/g,'<span class="tok-m">$1</span>');h=h.replace(/([{}\[\](),.:<>|])/g,'<span class="tok-p">$1</span>');return h}
+  document.querySelectorAll('code[class^="language-"]').forEach(e=>{e.innerHTML=hi(e.textContent)});
+  document.querySelectorAll('.copy').forEach(btn=>{btn.addEventListener('click',async()=>{const t=btn.parentElement.querySelector('pre').innerText;try{await navigator.clipboard.writeText(t);btn.textContent='已複製';setTimeout(()=>btn.textContent='複製',1200)}catch(e){btn.textContent='複製失敗'}})})
+})();
+</script>
+</body>
+</html>

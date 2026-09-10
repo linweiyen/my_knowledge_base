@@ -1,0 +1,565 @@
+<title>Harness Engineering of Claude Code</title>
+<style>
+  :root {
+    --paper: #eef1ee;
+    --paper-2: #e1e6df;
+    --ink: #131a20;
+    --ink-2: #1c252c;
+    --copper: #a8642f;
+    --copper-bright: #d68a52;
+    --graphite: #3a4550;
+    --mist: #c9d2d4;
+    --slate: #6b7f8c;
+    --line-light: rgba(58, 69, 80, 0.16);
+    --line-dark: rgba(199, 210, 212, 0.12);
+
+    --bg: var(--paper);
+    --bg-2: var(--paper-2);
+    --fg: var(--graphite);
+    --fg-dim: #6c7680;
+    --accent: var(--copper);
+    --accent-ink: #fbf6ef;
+    --line: var(--line-light);
+    --sheet-border: rgba(58, 69, 80, 0.35);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: var(--ink);
+      --bg-2: var(--ink-2);
+      --fg: var(--mist);
+      --fg-dim: #8b9aa1;
+      --accent: var(--copper-bright);
+      --accent-ink: #1a1108;
+      --line: var(--line-dark);
+      --sheet-border: rgba(199, 210, 212, 0.22);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: var(--ink);
+    --bg-2: var(--ink-2);
+    --fg: var(--mist);
+    --fg-dim: #8b9aa1;
+    --accent: var(--copper-bright);
+    --accent-ink: #1a1108;
+    --line: var(--line-dark);
+    --sheet-border: rgba(199, 210, 212, 0.22);
+  }
+  :root[data-theme="light"] {
+    --bg: var(--paper);
+    --bg-2: var(--paper-2);
+    --fg: var(--graphite);
+    --fg-dim: #6c7680;
+    --accent: var(--copper);
+    --accent-ink: #fbf6ef;
+    --line: var(--line-light);
+    --sheet-border: rgba(58, 69, 80, 0.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: Charter, "Iowan Old Style", Georgia, "Noto Serif TC", serif;
+    font-size: 17px;
+    line-height: 1.7;
+    background-image:
+      repeating-linear-gradient(0deg, var(--line) 0px, var(--line) 1px, transparent 1px, transparent 32px),
+      repeating-linear-gradient(90deg, var(--line) 0px, var(--line) 1px, transparent 1px, transparent 32px);
+  }
+
+  .sheet {
+    max-width: 760px;
+    margin: 48px auto;
+    padding: 0 0 64px;
+  }
+
+  @media (max-width: 640px) {
+    .sheet { margin: 20px auto; padding-bottom: 40px; }
+  }
+
+  .titleblock {
+    border: 1px solid var(--sheet-border);
+    border-bottom: none;
+    padding: 22px 28px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 18px;
+    font-family: "SF Mono", "Cascadia Code", Consolas, Menlo, monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+  }
+
+  .meta-row span b {
+    color: var(--fg);
+    font-weight: 600;
+  }
+
+  h1 {
+    font-family: Futura, "Century Gothic", "Segoe UI", "Noto Sans TC", sans-serif;
+    font-weight: 700;
+    font-size: 34px;
+    line-height: 1.18;
+    letter-spacing: -0.01em;
+    margin: 0;
+    text-wrap: balance;
+    color: var(--fg);
+  }
+
+  .subtitle {
+    font-family: Futura, "Century Gothic", "Segoe UI", "Noto Sans TC", sans-serif;
+    font-size: 15.5px;
+    color: var(--fg-dim);
+    margin: 0;
+    max-width: 46ch;
+  }
+
+  main {
+    border: 1px solid var(--sheet-border);
+    border-top: 3px solid var(--accent);
+    padding: 36px 28px 8px;
+    background: color-mix(in srgb, var(--bg) 92%, var(--bg-2));
+  }
+
+  section { margin-bottom: 44px; }
+  section:last-of-type { margin-bottom: 28px; }
+
+  .eyebrow {
+    font-family: "SF Mono", "Cascadia Code", Consolas, Menlo, monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 10px;
+  }
+  .eyebrow::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+
+  h2 {
+    font-family: Futura, "Century Gothic", "Segoe UI", "Noto Sans TC", sans-serif;
+    font-weight: 700;
+    font-size: 21px;
+    letter-spacing: -0.005em;
+    margin: 0 0 14px;
+    text-wrap: balance;
+    color: var(--fg);
+  }
+
+  p { margin: 0 0 14px; max-width: 62ch; }
+  p:last-child { margin-bottom: 0; }
+
+  .lede {
+    font-size: 18px;
+    max-width: 58ch;
+  }
+
+  blockquote.callout {
+    position: relative;
+    margin: 22px 0 0;
+    padding: 18px 22px;
+    border: 1px solid var(--line);
+    background: var(--bg-2);
+    font-style: italic;
+  }
+  blockquote.callout::before,
+  blockquote.callout::after {
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-color: var(--accent);
+  }
+  blockquote.callout::before {
+    top: -1px; left: -1px;
+    border-top: 2px solid var(--accent);
+    border-left: 2px solid var(--accent);
+  }
+  blockquote.callout::after {
+    bottom: -1px; right: -1px;
+    border-bottom: 2px solid var(--accent);
+    border-right: 2px solid var(--accent);
+  }
+  blockquote.callout p { margin: 0 0 10px; max-width: none; }
+  blockquote.callout cite {
+    display: block;
+    font-style: normal;
+    font-family: "SF Mono", "Cascadia Code", Consolas, Menlo, monospace;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--fg-dim);
+  }
+
+  /* layer diagram */
+  .stack {
+    margin: 24px 0 4px;
+    display: flex;
+    justify-content: center;
+  }
+  .layer {
+    position: relative;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+  }
+  .layer-outer {
+    width: 100%;
+    padding: 30px 22px 22px;
+    background: color-mix(in srgb, var(--bg-2) 100%, transparent);
+  }
+  .layer-mid {
+    margin: 0 auto;
+    width: 82%;
+    padding: 28px 20px 20px;
+    border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+    background: color-mix(in srgb, var(--bg) 55%, var(--bg-2));
+  }
+  .layer-core {
+    margin: 0 auto;
+    width: 56%;
+    padding: 22px 16px 18px;
+    border-color: var(--accent);
+    background: var(--bg);
+    text-align: center;
+  }
+  .layer-label {
+    position: absolute;
+    top: -9px;
+    left: 12px;
+    background: var(--bg-2);
+    padding: 0 8px;
+    font-family: "SF Mono", "Cascadia Code", Consolas, Menlo, monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+  }
+  .layer-core .layer-label {
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg);
+    color: var(--accent);
+  }
+  .layer-body {
+    font-size: 14px;
+    color: var(--fg);
+  }
+  .layer-core .layer-body {
+    font-family: Futura, "Century Gothic", "Segoe UI", sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+  }
+  .layer-body .fine {
+    display: block;
+    margin-top: 4px;
+    font-size: 12.5px;
+    color: var(--fg-dim);
+  }
+
+  /* redline correction */
+  .redline {
+    margin-top: 22px;
+    border-left: 3px solid var(--line);
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .redline .tag {
+    font-family: "SF Mono", "Cascadia Code", Consolas, Menlo, monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 1px 6px;
+    margin-right: 8px;
+    border: 1px solid var(--fg-dim);
+    color: var(--fg-dim);
+  }
+  .claim-before {
+    color: var(--fg-dim);
+    text-decoration: line-through;
+    text-decoration-color: color-mix(in srgb, var(--fg-dim) 60%, transparent);
+    text-decoration-thickness: 1.5px;
+    margin: 0;
+  }
+  .claim-after {
+    margin: 0;
+    font-weight: 600;
+    color: var(--fg);
+  }
+  .claim-after .tag {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .redline .caption {
+    margin-top: 2px;
+    font-size: 13px;
+    color: var(--fg-dim);
+    font-style: italic;
+  }
+
+  /* table */
+  .table-wrap {
+    margin-top: 20px;
+    overflow-x: auto;
+    border: 1px solid var(--line);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14.5px;
+    min-width: 560px;
+  }
+  thead th {
+    text-align: left;
+    font-family: "SF Mono", "Cascadia Code", Consolas, Menlo, monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+    font-weight: 500;
+    padding: 10px 14px;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--line);
+  }
+  tbody td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.mech {
+    font-family: "SF Mono", "Cascadia Code", Consolas, Menlo, monospace;
+    font-size: 13.5px;
+    white-space: nowrap;
+    color: var(--fg);
+  }
+  td.note { color: var(--fg-dim); font-size: 13.5px; }
+
+  .chip {
+    display: inline-block;
+    font-family: "SF Mono", "Cascadia Code", Consolas, Menlo, monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    padding: 2px 8px;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+  .chip-soft {
+    border: 1px solid var(--slate);
+    color: var(--slate);
+    background: transparent;
+  }
+  .chip-hard {
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-weight: 600;
+  }
+
+  /* verdict */
+  .verdict {
+    border-top: 1px solid var(--line);
+    padding-top: 26px;
+    margin-top: 6px;
+  }
+  .verdict p.statement {
+    font-family: Futura, "Century Gothic", "Segoe UI", "Noto Sans TC", sans-serif;
+    font-size: 21px;
+    font-weight: 700;
+    line-height: 1.45;
+    letter-spacing: -0.005em;
+    max-width: 54ch;
+    text-wrap: balance;
+    color: var(--fg);
+  }
+  .verdict p.statement em {
+    font-style: normal;
+    color: var(--accent);
+  }
+
+  footer {
+    margin-top: 18px;
+    padding: 16px 28px 20px;
+    border: 1px solid var(--sheet-border);
+    border-top: none;
+    font-family: "SF Mono", "Cascadia Code", Consolas, Menlo, monospace;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: var(--fg-dim);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.in {
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>
+
+<div class="sheet">
+  <div class="titleblock">
+    <div class="meta-row">
+      <span>DOC <b>CC-HARNESS-01</b></span>
+      <span>REV <b>A</b></span>
+      <span>DATE <b>2026-07-10</b></span>
+      <span>SUBJECT <b>Claude Code</b></span>
+    </div>
+    <h1>Harness Engineering of Claude Code</h1>
+    <p class="subtitle">使用者對這套「代理人鷹架」，到底能動到多深？——從一句過度簡化的答案，到修正後的完整分層。</p>
+  </div>
+
+  <main>
+    <section class="reveal">
+      <p class="eyebrow">01 — 定義</p>
+      <h2>什麼是 Harness？</h2>
+      <p class="lede">Harness（鷹架）是通用術語，指包在一顆語言模型外面的整套鷹架——工具、prompt、context 管理、執行環境——把一個模型變成能完成任務的 agent。這不是 Claude Code 專屬的說法，但 Claude Code 官方文件明確認領了它。</p>
+      <blockquote class="callout">
+        <p>“Claude Code serves as the agentic harness around Claude: it provides the tools, context management, and execution environment that turn a language model into a capable coding agent.”</p>
+        <cite>— Claude Code 官方文件</cite>
+      </blockquote>
+    </section>
+
+    <section class="reveal">
+      <p class="eyebrow">02 — 分層</p>
+      <h2>核心、鷹架、控制層</h2>
+      <p>三層由內而外：模型本身、Claude Code 提供的執行鷹架、以及使用者能配置的一切。使用者的規範不是站在鷹架外面，而是直接作用在最外圈——甚至能穿透進中間層。</p>
+      <div class="stack">
+        <div class="layer layer-outer">
+          <span class="layer-label">控制層 — 使用者可配置</span>
+          <div class="layer-body" style="margin-bottom:14px;">
+            CLAUDE.md · Skills · settings.json · Hooks · Subagents · MCP · Agent SDK
+          </div>
+          <div class="layer layer-mid">
+            <span class="layer-label">鷹架 — Claude Code CLI</span>
+            <div class="layer-body" style="margin-bottom:14px;">
+              工具呼叫、context 管理、執行環境、agentic loop
+              <span class="fine">Anthropic 提供的現成鷹架本體</span>
+            </div>
+            <div class="layer layer-core">
+              <span class="layer-label">核心</span>
+              <div class="layer-body">語言模型（Claude）</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="reveal">
+      <p class="eyebrow">03 — 修正</p>
+      <h2>對話中的一次自我修正</h2>
+      <div class="redline">
+        <p class="claim-before"><span class="tag">修正前</span>使用者只能給 Claude Code 外部規範。</p>
+        <p class="claim-after"><span class="tag">修正後</span>使用者能在多個層級上，直接工程化這套鷹架的行為。</p>
+        <p class="caption">這個修正本身，就發生在這場對話的追問裡——「我們給的規範不能算是 harness engineering 嗎？」</p>
+      </div>
+    </section>
+
+    <section class="reveal">
+      <p class="eyebrow">04 — 機制</p>
+      <h2>控制機制對照</h2>
+      <p>把「軟規則」與「硬程式碼」分開看，才看得出使用者實際能動的深度。</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>機制</th>
+              <th>性質</th>
+              <th>說明</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mech">CLAUDE.md</td>
+              <td><span class="chip chip-soft">軟規則</span></td>
+              <td class="note">自然語言指示，依賴模型理解遵循，不強制執行</td>
+            </tr>
+            <tr>
+              <td class="mech">Skills</td>
+              <td><span class="chip chip-soft">軟規則</span></td>
+              <td class="note">依需求載入的程序指引，同樣不強制</td>
+            </tr>
+            <tr>
+              <td class="mech">settings.json 權限</td>
+              <td><span class="chip chip-hard">硬程式碼</span></td>
+              <td class="note">每次工具呼叫都檢查，deny 規則強制擋下</td>
+            </tr>
+            <tr>
+              <td class="mech">環境變數</td>
+              <td><span class="chip chip-hard">硬程式碼</span></td>
+              <td class="note">直接注入 session 執行環境</td>
+            </tr>
+            <tr>
+              <td class="mech">Hooks</td>
+              <td><span class="chip chip-hard">硬程式碼</span></td>
+              <td class="note">shell / HTTP 攔截生命週期事件，能阻擋或改寫工具呼叫</td>
+            </tr>
+            <tr>
+              <td class="mech">Subagents</td>
+              <td><span class="chip chip-hard">硬程式碼</span></td>
+              <td class="note">強制限制工具集、指定 model、獨立 system prompt</td>
+            </tr>
+            <tr>
+              <td class="mech">MCP servers</td>
+              <td><span class="chip chip-hard">硬程式碼</span></td>
+              <td class="note">新增真正的工具能力，非建議</td>
+            </tr>
+            <tr>
+              <td class="mech">Agent SDK</td>
+              <td><span class="chip chip-hard">硬程式碼</span></td>
+              <td class="note">完全自建 loop、工具、context 管理——跳出 Claude Code 本體</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="verdict reveal">
+      <p class="eyebrow">05 — 結論</p>
+      <p class="statement">CLAUDE.md 是軟規則；但 hooks、permissions、MCP、Agent SDK 都是<em>真正在執行的程式碼</em>。Harness engineering 不是外部建議，而是對這套鷹架由淺到深的工程。</p>
+    </section>
+  </main>
+
+  <footer>
+    <span>整理自對話紀錄</span>
+    <span>2026-07-10</span>
+  </footer>
+</div>
+
+<script>
+  if (window.matchMedia("(prefers-reduced-motion: no-preference)").matches) {
+    const els = document.querySelectorAll(".reveal");
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.classList.add("in");
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    els.forEach((el) => io.observe(el));
+  } else {
+    document.querySelectorAll(".reveal").forEach((el) => el.classList.add("in"));
+  }
+</script>
