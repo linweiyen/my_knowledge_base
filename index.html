@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="知識庫研究入口">
+  <title>知識庫｜研究入口</title>
+  <style>
+    :root {
+      --ink: #172033; --muted: #64748b; --line: #e4e9f2; --paper: #f6f8fc;
+      --blue: #2563eb; --blue-soft: #eaf1ff; --violet: #7c3aed; --amber: #d97706; --rose: #e11d48;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Noto Sans TC", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: radial-gradient(circle at 85% -10%, #e7efff 0, transparent 36rem), var(--paper); }
+    a { color: inherit; text-decoration: none; }
+    .shell { max-width: 1180px; margin: 0 auto; padding: 32px 22px 70px; }
+    .hero { display: flex; align-items: end; justify-content: space-between; gap: 24px; padding: 24px 0 38px; }
+    .kicker { color: var(--blue); font-size: .75rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    h1 { margin: 8px 0 10px; font-size: clamp(2.1rem, 5vw, 4.1rem); letter-spacing: -.055em; line-height: .98; }
+    .intro { max-width: 640px; color: var(--muted); font-size: 1.05rem; line-height: 1.75; margin: 0; }
+    .hero-link { white-space: nowrap; color: var(--blue); font-weight: 750; border-bottom: 1px solid #a8c1ff; padding-bottom: 3px; }
+    .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 46px; }
+    .stat { background: rgba(255,255,255,.75); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; box-shadow: 0 7px 24px rgba(44,62,96,.06); }
+    .stat strong { display: block; font-size: 1.75rem; letter-spacing: -.04em; }
+    .stat span { color: var(--muted); font-size: .86rem; }
+    .collection { margin: 0 0 40px; }
+    .section-heading { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .section-heading h2 { margin: 0; font-size: 1.16rem; letter-spacing: -.02em; }
+    .section-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 0 5px var(--blue-soft); }
+    .section-count { color: var(--muted); font-size: .82rem; margin-left: 4px; }
+    .violet .section-dot { background: var(--violet); box-shadow: 0 0 0 5px #f0e9ff; }
+    .amber .section-dot { background: var(--amber); box-shadow: 0 0 0 5px #fff1d8; }
+    .rose .section-dot { background: var(--rose); box-shadow: 0 0 0 5px #ffe7ee; }
+    .card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .card { min-height: 218px; display: flex; flex-direction: column; background: rgba(255,255,255,.9); border: 1px solid var(--line); border-radius: 18px; padding: 19px 19px 17px; box-shadow: 0 9px 28px rgba(44,62,96,.07); transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+    .card:hover { transform: translateY(-3px); border-color: #bed0f4; box-shadow: 0 14px 34px rgba(44,62,96,.13); }
+    .card-top { display: flex; justify-content: space-between; color: var(--muted); }
+    .eyebrow { font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .arrow { color: var(--blue); font-size: 1.25rem; line-height: .8; }
+    .card h3 { margin: 16px 0 9px; font-size: 1.08rem; line-height: 1.35; letter-spacing: -.018em; }
+    .card h3 a:hover { color: var(--blue); }
+    .card p { color: var(--muted); font-size: .9rem; line-height: 1.65; margin: 0; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 16px; }
+    .tags span { color: #52617a; background: #f1f4f9; border-radius: 999px; padding: 4px 8px; font-size: .72rem; }
+    .directory { margin-top: 54px; padding-top: 30px; border-top: 1px solid var(--line); }
+    .directory h2 { margin: 0 0 7px; font-size: 1.3rem; }
+    .directory-lead { color: var(--muted); margin: 0 0 17px; line-height: 1.6; }
+    .tree { display: grid; gap: 9px; }
+    details { background: rgba(255,255,255,.7); border: 1px solid var(--line); border-radius: 13px; overflow: hidden; }
+    summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; padding: 13px 16px; font-weight: 760; }
+    summary::-webkit-details-marker { display: none; }
+    summary::before { content: "＋"; color: var(--blue); margin-right: 8px; }
+    details[open] summary::before { content: "－"; }
+    .file-list { margin: 0; padding: 0 16px 14px 38px; border-top: 1px solid var(--line); columns: 2; column-gap: 28px; }
+    .file-list li { break-inside: avoid; padding-top: 10px; color: var(--muted); font-size: .82rem; line-height: 1.45; }
+    .file-list a { color: #3e5d93; overflow-wrap: anywhere; }
+    .file-list a:hover { color: var(--blue); text-decoration: underline; }
+    footer { color: var(--muted); font-size: .8rem; padding-top: 35px; }
+    @media (max-width: 860px) { .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 620px) { .shell { padding: 22px 15px 55px; } .hero { display: block; padding-bottom: 28px; } .hero-link { display: inline-block; margin-top: 17px; } .stats { grid-template-columns: 1fr; margin-bottom: 35px; } .card-grid { grid-template-columns: 1fr; } .file-list { columns: 1; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <div class="kicker">Research knowledge base</div>
+        <h1>知識庫</h1>
+        <p class="intro">把 AIDMS、GPU、AI research 與 AI coding 的研究，整理成可以快速閱讀、追溯與交叉連結的入口。</p>
+      </div>
+      <a class="hero-link" href="README.md">閱讀 README →</a>
+    </header>
+    <section class="stats" aria-label="知識庫統計">
+      <div class="stat"><strong>9</strong><span>篇研究 HTML</span></div>
+      <div class="stat"><strong>139</strong><span>個可連結檔案</span></div>
+      <div class="stat"><strong>4</strong><span>個研究主題</span></div>
+    </section>
+    <section aria-label="研究卡片">
+      <section class="collection blue">
+        <div class="section-heading"><span class="section-dot"></span><h2>AIDMS 產品</h2><span class="section-count">4 篇</span></div>
+        <div class="card-grid">
+          <article class="card">
+            <div class="card-top"><span class="eyebrow">AIDMS 產品</span><span class="arrow">↗</span></div>
+            <h3><a href="products/aidms/architecture/inference-engineering/aidms-evolution-inference.html">AIDMS 的演進與推論工程定位</a></h3>
+            <p>從單機 Docker 到 Kubernetes 多節點，整理 Project、Agent Harness 與推論請求的責任分工。</p>
+            <div class="tags"><span>架構</span><span>Inference Engineering</span></div>
+          </article>
+          <article class="card">
+            <div class="card-top"><span class="eyebrow">AIDMS 產品</span><span class="arrow">↗</span></div>
+            <h3><a href="products/aidms/architecture/gpu-sharing/aidms_mps_mig_full_report.html">AIDMS GPU Sharing Strategy</a></h3>
+            <p>比較 NVIDIA MPS 與 MIG，說明彈性共享、硬體隔離與 AIDMS Project 邊界的適用情境。</p>
+            <div class="tags"><span>GPU 共享</span><span>MPS / MIG</span></div>
+          </article>
+          <article class="card">
+            <div class="card-top"><span class="eyebrow">AIDMS 產品</span><span class="arrow">↗</span></div>
+            <h3><a href="products/aidms/architecture/hgx-b300/aidms-hgx-b300.html">AIDMS × Supermicro HGX B300</a></h3>
+            <p>說明 HGX B300 的算力如何透過模型、Runtime 與營運能力轉化為企業可用的平台。</p>
+            <div class="tags"><span>基礎設施</span><span>HGX B300</span></div>
+          </article>
+          <article class="card">
+            <div class="card-top"><span class="eyebrow">AIDMS 產品</span><span class="arrow">↗</span></div>
+            <h3><a href="products/aidms/competitors/backend-ai/backend_ai_vs_aidms_table.html">Backend.AI vs AIDMS</a></h3>
+            <p>以比較表整理 Backend.AI 的 AI Infrastructure Platform 與 AIDMS 的 AI Development &amp; Deployment Platform 定位差異。</p>
+            <div class="tags"><span>競品</span><span>比較</span></div>
+          </article>
+        </div>
+      </section>
+      <section class="collection violet">
+        <div class="section-heading"><span class="section-dot"></span><h2>GPU 研究</h2><span class="section-count">1 篇</span></div>
+        <div class="card-grid">
+          <article class="card">
+            <div class="card-top"><span class="eyebrow">GPU 研究</span><span class="arrow">↗</span></div>
+            <h3><a href="products/gpu/b300-vs-rtx-pro-6000/pro6000_vs_b300.html">B300 vs RTX PRO 6000 Blackwell</a></h3>
+            <p>從規格、LLM、Omniverse、價格與整機採購情境分析兩種 GPU 平台的選型差異。</p>
+            <div class="tags"><span>GPU</span><span>選型分析</span></div>
+          </article>
+        </div>
+      </section>
+      <section class="collection amber">
+        <div class="section-heading"><span class="section-dot"></span><h2>AI Coding</h2><span class="section-count">2 篇</span></div>
+        <div class="card-grid">
+          <article class="card">
+            <div class="card-top"><span class="eyebrow">AI Coding</span><span class="arrow">↗</span></div>
+            <h3><a href="topics/ai-coding/harness-engineering/overview/ai_harness_engineering_report.html">AI Harness Engineering 與 Context Engineering</a></h3>
+            <p>整理 harness engineering 的概念、查核點與生產級 AI agent 的背景、目標與完成定義。</p>
+            <div class="tags"><span>Harness</span><span>Context</span></div>
+          </article>
+          <article class="card">
+            <div class="card-top"><span class="eyebrow">AI Coding</span><span class="arrow">↗</span></div>
+            <h3><a href="topics/ai-coding/tools/claude-code/harness_engineering_of_claude_code.html">Harness Engineering of Claude Code</a></h3>
+            <p>分層說明 Claude Code 的代理人鷹架，以及它對工具、流程與執行環境的控制範圍。</p>
+            <div class="tags"><span>Claude Code</span><span>Agent</span></div>
+          </article>
+        </div>
+      </section>
+      <section class="collection rose">
+        <div class="section-heading"><span class="section-dot"></span><h2>AI Research</h2><span class="section-count">2 篇</span></div>
+        <div class="card-grid">
+          <article class="card">
+            <div class="card-top"><span class="eyebrow">AI Research</span><span class="arrow">↗</span></div>
+            <h3><a href="topics/ai-research/evaluation/agent-evaluation/agent_evaluation_methodology_report.html">Agentic AI 的 Agent Evaluation 方法論</a></h3>
+            <p>以易懂方式整理 Agent 評估的流程、指標、工具、限制與落地方法。</p>
+            <div class="tags"><span>Evaluation</span><span>Agent</span></div>
+          </article>
+          <article class="card">
+            <div class="card-top"><span class="eyebrow">AI Research</span><span class="arrow">↗</span></div>
+            <h3><a href="topics/ai-research/evaluation/llm-evaluation/llm_evaluation_methodology.html">驗證 Fine-tuned LLM 的方法論</a></h3>
+            <p>提出程式結構化比對與 blind LLM-as-judge 的雙層評估架構，降低評估偏差。</p>
+            <div class="tags"><span>Evaluation</span><span>Fine-tuning</span></div>
+          </article>
+        </div>
+      </section>
+    </section>
+    <section class="directory" aria-label="完整檔案樹">
+      <h2>完整檔案樹</h2>
+      <p class="directory-lead">依工作區目錄展開，包含研究正文、入口、附件與規劃文件。</p>
+      <div class="tree">
+          <details>
+            <summary><span>_templates</span><small>1 個檔案</small></summary>
+            <ul class="file-list">
+              <li><a href="_templates/.gitkeep">_templates\.gitkeep</a></li>
+            </ul>
+          </details>
+          <details>
+            <summary><span>.git</span><small>111 個檔案</small></summary>
+            <ul class="file-list">
+              <li><a href=".git/COMMIT_EDITMSG">.git\COMMIT_EDITMSG</a></li>
+              <li><a href=".git/config">.git\config</a></li>
+              <li><a href=".git/description">.git\description</a></li>
+              <li><a href=".git/HEAD">.git\HEAD</a></li>
+              <li><a href=".git/hooks/applypatch-msg.sample">.git\hooks\applypatch-msg.sample</a></li>
+              <li><a href=".git/hooks/commit-msg.sample">.git\hooks\commit-msg.sample</a></li>
+              <li><a href=".git/hooks/fsmonitor-watchman.sample">.git\hooks\fsmonitor-watchman.sample</a></li>
+              <li><a href=".git/hooks/post-update.sample">.git\hooks\post-update.sample</a></li>
+              <li><a href=".git/hooks/pre-applypatch.sample">.git\hooks\pre-applypatch.sample</a></li>
+              <li><a href=".git/hooks/pre-commit.sample">.git\hooks\pre-commit.sample</a></li>
+              <li><a href=".git/hooks/pre-merge-commit.sample">.git\hooks\pre-merge-commit.sample</a></li>
+              <li><a href=".git/hooks/pre-push.sample">.git\hooks\pre-push.sample</a></li>
+              <li><a href=".git/hooks/pre-rebase.sample">.git\hooks\pre-rebase.sample</a></li>
+              <li><a href=".git/hooks/pre-receive.sample">.git\hooks\pre-receive.sample</a></li>
+              <li><a href=".git/hooks/prepare-commit-msg.sample">.git\hooks\prepare-commit-msg.sample</a></li>
+              <li><a href=".git/hooks/push-to-checkout.sample">.git\hooks\push-to-checkout.sample</a></li>
+              <li><a href=".git/hooks/update.sample">.git\hooks\update.sample</a></li>
+              <li><a href=".git/index">.git\index</a></li>
+              <li><a href=".git/info/exclude">.git\info\exclude</a></li>
+              <li><a href=".git/logs/HEAD">.git\logs\HEAD</a></li>
+              <li><a href=".git/logs/refs/heads/main">.git\logs\refs\heads\main</a></li>
+              <li><a href=".git/logs/refs/remotes/origin/HEAD">.git\logs\refs\remotes\origin\HEAD</a></li>
+              <li><a href=".git/logs/refs/remotes/origin/main">.git\logs\refs\remotes\origin\main</a></li>
+              <li><a href=".git/objects/00/348fe0d942a49f4453585654077acc7566d190">.git\objects\00\348fe0d942a49f4453585654077acc7566d190</a></li>
+              <li><a href=".git/objects/04/c253ecd08e458c096c32426ae87aab23586f16">.git\objects\04\c253ecd08e458c096c32426ae87aab23586f16</a></li>
+              <li><a href=".git/objects/06/b02cf306d48d4ba5c23e07b58c6c8831251fd9">.git\objects\06\b02cf306d48d4ba5c23e07b58c6c8831251fd9</a></li>
+              <li><a href=".git/objects/0a/0b3c72fe11b5ed18c3007a7040815e8bc8d998">.git\objects\0a\0b3c72fe11b5ed18c3007a7040815e8bc8d998</a></li>
+              <li><a href=".git/objects/0a/d56def5f3c5f68c7d20d4055c63d96c1c36fde">.git\objects\0a\d56def5f3c5f68c7d20d4055c63d96c1c36fde</a></li>
+              <li><a href=".git/objects/16/bcff61d1acf0dd8a836e18b3f8fbc74cfd2476">.git\objects\16\bcff61d1acf0dd8a836e18b3f8fbc74cfd2476</a></li>
+              <li><a href=".git/objects/19/72da34968ef38985a02df432a405c817001415">.git\objects\19\72da34968ef38985a02df432a405c817001415</a></li>
+              <li><a href=".git/objects/1a/6df0241ab166fde174a7cc2cfaaa8a1b23bff7">.git\objects\1a\6df0241ab166fde174a7cc2cfaaa8a1b23bff7</a></li>
+              <li><a href=".git/objects/1c/c9ea145f2348b3bf31d826eb1b8b1f19286193">.git\objects\1c\c9ea145f2348b3bf31d826eb1b8b1f19286193</a></li>
+              <li><a href=".git/objects/1e/b457fa07d9ec41ac8aa71867b502ce82f2ac01">.git\objects\1e\b457fa07d9ec41ac8aa71867b502ce82f2ac01</a></li>
+              <li><a href=".git/objects/1f/400e69932719f983e7e0f3748f8bbc890d2df9">.git\objects\1f\400e69932719f983e7e0f3748f8bbc890d2df9</a></li>
+              <li><a href=".git/objects/27/82344cbad95012ae80ac99b6a0a80b03925096">.git\objects\27\82344cbad95012ae80ac99b6a0a80b03925096</a></li>
+              <li><a href=".git/objects/2b/7a6ac2fefb86dfe330be294b7986ae05f86747">.git\objects\2b\7a6ac2fefb86dfe330be294b7986ae05f86747</a></li>
+              <li><a href=".git/objects/2e/b5c5d4e576ecc6594cce87c953bd6005158004">.git\objects\2e\b5c5d4e576ecc6594cce87c953bd6005158004</a></li>
+              <li><a href=".git/objects/2f/fb02d577eb969fd45dc68263fbaed0d65f273f">.git\objects\2f\fb02d577eb969fd45dc68263fbaed0d65f273f</a></li>
+              <li><a href=".git/objects/32/9ead00fee8d0c4d0e56dbaef2c07222c73e5fc">.git\objects\32\9ead00fee8d0c4d0e56dbaef2c07222c73e5fc</a></li>
+              <li><a href=".git/objects/33/f15f56c6cb1f50fa4320d76e3608dd2db244b9">.git\objects\33\f15f56c6cb1f50fa4320d76e3608dd2db244b9</a></li>
+              <li><a href=".git/objects/35/e83ffd0638926cfe7516c2467e50c2861ce42d">.git\objects\35\e83ffd0638926cfe7516c2467e50c2861ce42d</a></li>
+              <li><a href=".git/objects/36/418221856f578381791481632e8aff4bb87181">.git\objects\36\418221856f578381791481632e8aff4bb87181</a></li>
+              <li><a href=".git/objects/49/5e589e103d05a2405a3b9535ee0e32d6053390">.git\objects\49\5e589e103d05a2405a3b9535ee0e32d6053390</a></li>
+              <li><a href=".git/objects/4a/1e280eff9e9b1ef595d72ce0f66080b241acc7">.git\objects\4a\1e280eff9e9b1ef595d72ce0f66080b241acc7</a></li>
+              <li><a href=".git/objects/4b/22d965230052115fe2aaae3ae13bba9a46444d">.git\objects\4b\22d965230052115fe2aaae3ae13bba9a46444d</a></li>
+              <li><a href=".git/objects/4c/847f9be71bdd25356246c5fadbac8968a19023">.git\objects\4c\847f9be71bdd25356246c5fadbac8968a19023</a></li>
+              <li><a href=".git/objects/4c/bebab924224525647c44bbe0ad4f35c0c079d8">.git\objects\4c\bebab924224525647c44bbe0ad4f35c0c079d8</a></li>
+              <li><a href=".git/objects/4f/09832d5def97b699b9b1b383bf3793235c9247">.git\objects\4f\09832d5def97b699b9b1b383bf3793235c9247</a></li>
+              <li><a href=".git/objects/52/ed574ac2da7f4e96c247953f1778642e97d517">.git\objects\52\ed574ac2da7f4e96c247953f1778642e97d517</a></li>
+              <li><a href=".git/objects/59/8d94750f3775abeb71b4c286669b70a3eff100">.git\objects\59\8d94750f3775abeb71b4c286669b70a3eff100</a></li>
+              <li><a href=".git/objects/5b/fad2b3f8e483b6b173d8aaff19597e84626f15">.git\objects\5b\fad2b3f8e483b6b173d8aaff19597e84626f15</a></li>
+              <li><a href=".git/objects/5c/42dc068b3a32a3a22a108afb3dff200f669369">.git\objects\5c\42dc068b3a32a3a22a108afb3dff200f669369</a></li>
+              <li><a href=".git/objects/60/a5285b041e1fef503d3e58d206e078f015d13c">.git\objects\60\a5285b041e1fef503d3e58d206e078f015d13c</a></li>
+              <li><a href=".git/objects/66/468cf999598bdfecf477df4d374acd8c7590e9">.git\objects\66\468cf999598bdfecf477df4d374acd8c7590e9</a></li>
+              <li><a href=".git/objects/66/6c83451b0edfa7f169ec336a039e7451924d56">.git\objects\66\6c83451b0edfa7f169ec336a039e7451924d56</a></li>
+              <li><a href=".git/objects/6a/ccc4ffd0bab6eadf30ae429825192f8e9ff1d6">.git\objects\6a\ccc4ffd0bab6eadf30ae429825192f8e9ff1d6</a></li>
+              <li><a href=".git/objects/70/c0776898eab1e9701c19e0b559cf2f232b48ab">.git\objects\70\c0776898eab1e9701c19e0b559cf2f232b48ab</a></li>
+              <li><a href=".git/objects/72/2e678d0becb63e25093d96538ae9ae3280c9cf">.git\objects\72\2e678d0becb63e25093d96538ae9ae3280c9cf</a></li>
+              <li><a href=".git/objects/75/99f419dc3aa8915a130e0c2a3840708520300a">.git\objects\75\99f419dc3aa8915a130e0c2a3840708520300a</a></li>
+              <li><a href=".git/objects/89/58453736244e32db26470cf8091d118608d5c4">.git\objects\89\58453736244e32db26470cf8091d118608d5c4</a></li>
+              <li><a href=".git/objects/8b/137891791fe96927ad78e64b0aad7bded08bdc">.git\objects\8b\137891791fe96927ad78e64b0aad7bded08bdc</a></li>
+              <li><a href=".git/objects/8e/32cb467e58c3661d33231cf2da84e3b17c2ad0">.git\objects\8e\32cb467e58c3661d33231cf2da84e3b17c2ad0</a></li>
+              <li><a href=".git/objects/8e/fff37b6976fbc56129fa22c2d08e38298e2093">.git\objects\8e\fff37b6976fbc56129fa22c2d08e38298e2093</a></li>
+              <li><a href=".git/objects/8f/4198238aa8d4b4c0b8c0191dc3981e770d0cc8">.git\objects\8f\4198238aa8d4b4c0b8c0191dc3981e770d0cc8</a></li>
+              <li><a href=".git/objects/8f/804a587196fcf6072e3838bde66a82a8d33dfe">.git\objects\8f\804a587196fcf6072e3838bde66a82a8d33dfe</a></li>
+              <li><a href=".git/objects/94/cc0def65a5c45f905113e7a31acdab46be43ae">.git\objects\94\cc0def65a5c45f905113e7a31acdab46be43ae</a></li>
+              <li><a href=".git/objects/95/67a582ff81fe80065be5af765bdec2dbdd210c">.git\objects\95\67a582ff81fe80065be5af765bdec2dbdd210c</a></li>
+              <li><a href=".git/objects/95/de7df665b54941815773e438094dfd18971bf1">.git\objects\95\de7df665b54941815773e438094dfd18971bf1</a></li>
+              <li><a href=".git/objects/96/bc581362abd6b09e4f3c558991b10b147e76f7">.git\objects\96\bc581362abd6b09e4f3c558991b10b147e76f7</a></li>
+              <li><a href=".git/objects/97/fc476a61837326c4a458490d2a27368c22a1a9">.git\objects\97\fc476a61837326c4a458490d2a27368c22a1a9</a></li>
+              <li><a href=".git/objects/9e/1b9b0ab77fc868cd854e529c36c1a0fe630393">.git\objects\9e\1b9b0ab77fc868cd854e529c36c1a0fe630393</a></li>
+              <li><a href=".git/objects/a4/79ccc8ac4cf24b905dd5a9cb6ca0f05c8ccb78">.git\objects\a4\79ccc8ac4cf24b905dd5a9cb6ca0f05c8ccb78</a></li>
+              <li><a href=".git/objects/a5/bc359833657384046b2659410467649a958528">.git\objects\a5\bc359833657384046b2659410467649a958528</a></li>
+              <li><a href=".git/objects/a6/2e4c6aea16fe5814ce04be86b04cc86df337b4">.git\objects\a6\2e4c6aea16fe5814ce04be86b04cc86df337b4</a></li>
+              <li><a href=".git/objects/a6/5c25e9952f0a9fae5c1387540a4c9e82a4a2a0">.git\objects\a6\5c25e9952f0a9fae5c1387540a4c9e82a4a2a0</a></li>
+              <li><a href=".git/objects/ae/4a1876f92824cf32efd4f8cdbc0732a7d52172">.git\objects\ae\4a1876f92824cf32efd4f8cdbc0732a7d52172</a></li>
+              <li><a href=".git/objects/af/d4245eacf9143555b02276fd7018d0ac7c5fa1">.git\objects\af\d4245eacf9143555b02276fd7018d0ac7c5fa1</a></li>
+              <li><a href=".git/objects/b2/2ac4eb4db1ad767ed183bdf37c3bc1a3695611">.git\objects\b2\2ac4eb4db1ad767ed183bdf37c3bc1a3695611</a></li>
+              <li><a href=".git/objects/b2/f82a1d1911cd5cdd7bd20f16fcc30035ad161d">.git\objects\b2\f82a1d1911cd5cdd7bd20f16fcc30035ad161d</a></li>
+              <li><a href=".git/objects/b5/c383b8e4483b0af36d532c23bca23a723cc030">.git\objects\b5\c383b8e4483b0af36d532c23bca23a723cc030</a></li>
+              <li><a href=".git/objects/b6/17a10a84cf971f474bd7a0f208be8d8999edfa">.git\objects\b6\17a10a84cf971f474bd7a0f208be8d8999edfa</a></li>
+              <li><a href=".git/objects/b7/2499dda732154b65f6be9b39408790b1037bca">.git\objects\b7\2499dda732154b65f6be9b39408790b1037bca</a></li>
+              <li><a href=".git/objects/be/b14011c0b9528dec0d58473fa65d24813ded12">.git\objects\be\b14011c0b9528dec0d58473fa65d24813ded12</a></li>
+              <li><a href=".git/objects/c0/1022eb1936186a9ab8cf95077210816464ac31">.git\objects\c0\1022eb1936186a9ab8cf95077210816464ac31</a></li>
+              <li><a href=".git/objects/c2/c1d53a9c412fbfab7933c7b82015c0842a22df">.git\objects\c2\c1d53a9c412fbfab7933c7b82015c0842a22df</a></li>
+              <li><a href=".git/objects/c3/5601f78b62a1539ff2620e61de2b1084731f68">.git\objects\c3\5601f78b62a1539ff2620e61de2b1084731f68</a></li>
+              <li><a href=".git/objects/c5/a7619b80c623095eb077180085025169f67cca">.git\objects\c5\a7619b80c623095eb077180085025169f67cca</a></li>
+              <li><a href=".git/objects/c6/5f83f5ce3270bdd9d17860308cbb71659bda4d">.git\objects\c6\5f83f5ce3270bdd9d17860308cbb71659bda4d</a></li>
+              <li><a href=".git/objects/c8/856b9ef86c81876f0c4846b8c40714870c5bb7">.git\objects\c8\856b9ef86c81876f0c4846b8c40714870c5bb7</a></li>
+              <li><a href=".git/objects/d9/5b15431b46c976b87e21e282873c6ee21159d5">.git\objects\d9\5b15431b46c976b87e21e282873c6ee21159d5</a></li>
+              <li><a href=".git/objects/da/bd1b6af1a0124a9c2cc265f4614fd004fc4e4f">.git\objects\da\bd1b6af1a0124a9c2cc265f4614fd004fc4e4f</a></li>
+              <li><a href=".git/objects/dc/b32628e52992484579880f4c8f12c1c66c86dc">.git\objects\dc\b32628e52992484579880f4c8f12c1c66c86dc</a></li>
+              <li><a href=".git/objects/e4/ffb5ffe3d66b33cec58da538cbd26616af6af2">.git\objects\e4\ffb5ffe3d66b33cec58da538cbd26616af6af2</a></li>
+              <li><a href=".git/objects/e8/da43ea677f7227ac9d4d74bc80b91cb42ddabb">.git\objects\e8\da43ea677f7227ac9d4d74bc80b91cb42ddabb</a></li>
+              <li><a href=".git/objects/eb/31fec819c946bbf6289aead38354936498520a">.git\objects\eb\31fec819c946bbf6289aead38354936498520a</a></li>
+              <li><a href=".git/objects/ed/04f27cdff5bbfb65f8e23dec4acf7eb2887890">.git\objects\ed\04f27cdff5bbfb65f8e23dec4acf7eb2887890</a></li>
+              <li><a href=".git/objects/ed/e79d3ef98190037cf7ca1c24d599174d1c382e">.git\objects\ed\e79d3ef98190037cf7ca1c24d599174d1c382e</a></li>
+              <li><a href=".git/objects/ef/0bac019e5e3a920219066db5226de0e0d31a54">.git\objects\ef\0bac019e5e3a920219066db5226de0e0d31a54</a></li>
+              <li><a href=".git/objects/ef/5b2ea16dd982a1175308dd306dd9a1eb7036d6">.git\objects\ef\5b2ea16dd982a1175308dd306dd9a1eb7036d6</a></li>
+              <li><a href=".git/objects/ef/6de6dc420cc56cf375646b84c5b198c99bd406">.git\objects\ef\6de6dc420cc56cf375646b84c5b198c99bd406</a></li>
+              <li><a href=".git/objects/f1/49d744bbbc9985635c02620eace5720b9a25b7">.git\objects\f1\49d744bbbc9985635c02620eace5720b9a25b7</a></li>
+              <li><a href=".git/objects/f2/2b2358d3292b89b421da3c32ca5f7718baea6b">.git\objects\f2\2b2358d3292b89b421da3c32ca5f7718baea6b</a></li>
+              <li><a href=".git/objects/f3/65cfaa83f576ee2b7ce1e88845345be6c82350">.git\objects\f3\65cfaa83f576ee2b7ce1e88845345be6c82350</a></li>
+              <li><a href=".git/objects/f3/aaa4e3c3c13d3fcdc34e0f5b6ab9ca5676d437">.git\objects\f3\aaa4e3c3c13d3fcdc34e0f5b6ab9ca5676d437</a></li>
+              <li><a href=".git/objects/pack/pack-2e8a28110fe0330b54700caea766b832ead8803a.idx">.git\objects\pack\pack-2e8a28110fe0330b54700caea766b832ead8803a.idx</a></li>
+              <li><a href=".git/objects/pack/pack-2e8a28110fe0330b54700caea766b832ead8803a.pack">.git\objects\pack\pack-2e8a28110fe0330b54700caea766b832ead8803a.pack</a></li>
+              <li><a href=".git/packed-refs">.git\packed-refs</a></li>
+              <li><a href=".git/refs/codex/turn-diffs/captures/1789439470107/d353e60a-3ef7-4739-af58-ea61be4056f1/base">.git\refs\codex\turn-diffs\captures\1789439470107\d353e60a-3ef7-4739-af58-ea61be4056f1\base</a></li>
+              <li><a href=".git/refs/heads/main">.git\refs\heads\main</a></li>
+              <li><a href=".git/refs/remotes/origin/HEAD">.git\refs\remotes\origin\HEAD</a></li>
+              <li><a href=".git/refs/remotes/origin/main">.git\refs\remotes\origin\main</a></li>
+            </ul>
+          </details>
+          <details>
+            <summary><span>根目錄</span><small>4 個檔案</small></summary>
+            <ul class="file-list">
+              <li><a href=".gitignore">.gitignore</a></li>
+              <li><a href="AGENTS.md">AGENTS.md</a></li>
+              <li><a href="KNOWLEDGE_BASE_PLAN.md">KNOWLEDGE_BASE_PLAN.md</a></li>
+              <li><a href="README.md">README.md</a></li>
+            </ul>
+          </details>
+          <details>
+            <summary><span>archive</span><small>1 個檔案</small></summary>
+            <ul class="file-list">
+              <li><a href="archive/.gitkeep">archive\.gitkeep</a></li>
+            </ul>
+          </details>
+          <details>
+            <summary><span>inbox</span><small>1 個檔案</small></summary>
+            <ul class="file-list">
+              <li><a href="inbox/.gitkeep">inbox\.gitkeep</a></li>
+            </ul>
+          </details>
+          <details open>
+            <summary><span>products</span><small>12 個檔案</small></summary>
+            <ul class="file-list">
+              <li><a href="products/aidms/architecture/gpu-sharing/aidms_mps_mig_full_report.html">products\aidms\architecture\gpu-sharing\aidms_mps_mig_full_report.html</a></li>
+              <li><a href="products/aidms/architecture/hgx-b300/aidms-hgx-b300.html">products\aidms\architecture\hgx-b300\aidms-hgx-b300.html</a></li>
+              <li><a href="products/aidms/architecture/inference-engineering/aidms-evolution-inference.html">products\aidms\architecture\inference-engineering\aidms-evolution-inference.html</a></li>
+              <li><a href="products/aidms/architecture/inference-router/assets/build.mjs">products\aidms\architecture\inference-router\assets\build.mjs</a></li>
+              <li><a href="products/aidms/architecture/inference-router/index.html">products\aidms\architecture\inference-router\index.html</a></li>
+              <li><a href="products/aidms/architecture/inference-router/research.md">products\aidms\architecture\inference-router\research.md</a></li>
+              <li><a href="products/aidms/competitors/.gitkeep">products\aidms\competitors\.gitkeep</a></li>
+              <li><a href="products/aidms/competitors/backend-ai/backend_ai_vs_aidms_table.html">products\aidms\competitors\backend-ai\backend_ai_vs_aidms_table.html</a></li>
+              <li><a href="products/aidms/decisions/.gitkeep">products\aidms\decisions\.gitkeep</a></li>
+              <li><a href="products/aidms/requirements/.gitkeep">products\aidms\requirements\.gitkeep</a></li>
+              <li><a href="products/gpu/.gitkeep">products\gpu\.gitkeep</a></li>
+              <li><a href="products/gpu/b300-vs-rtx-pro-6000/pro6000_vs_b300.html">products\gpu\b300-vs-rtx-pro-6000\pro6000_vs_b300.html</a></li>
+            </ul>
+          </details>
+          <details>
+            <summary><span>radar</span><small>1 個檔案</small></summary>
+            <ul class="file-list">
+              <li><a href="radar/2026/.gitkeep">radar\2026\.gitkeep</a></li>
+            </ul>
+          </details>
+          <details open>
+            <summary><span>topics</span><small>8 個檔案</small></summary>
+            <ul class="file-list">
+              <li><a href="topics/ai-coding/harness-engineering/overview/ai_harness_engineering_report.html">topics\ai-coding\harness-engineering\overview\ai_harness_engineering_report.html</a></li>
+              <li><a href="topics/ai-coding/tools/claude-code/harness_engineering_of_claude_code.html">topics\ai-coding\tools\claude-code\harness_engineering_of_claude_code.html</a></li>
+              <li><a href="topics/ai-coding/workflows/.gitkeep">topics\ai-coding\workflows\.gitkeep</a></li>
+              <li><a href="topics/ai-research/agents/.gitkeep">topics\ai-research\agents\.gitkeep</a></li>
+              <li><a href="topics/ai-research/evaluation/agent-evaluation/agent_evaluation_methodology_report.html">topics\ai-research\evaluation\agent-evaluation\agent_evaluation_methodology_report.html</a></li>
+              <li><a href="topics/ai-research/evaluation/llm-evaluation/llm_evaluation_methodology.html">topics\ai-research\evaluation\llm-evaluation\llm_evaluation_methodology.html</a></li>
+              <li><a href="topics/ai-research/inference-and-training/.gitkeep">topics\ai-research\inference-and-training\.gitkeep</a></li>
+              <li><a href="topics/ai-research/models/.gitkeep">topics\ai-research\models\.gitkeep</a></li>
+            </ul>
+          </details>
+      </div>
+    </section>
+    <footer>最後更新：2026-09-15 · 研究內容仍以各文件中的來源與查證狀態為準。</footer>
+  </main>
+</body>
+</html>
