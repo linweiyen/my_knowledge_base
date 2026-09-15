@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="AIDMS 推論路由器的功能與操作流程：加入既有 LLM Job、批次建立 Job，以及設定自動擴縮。">
+<title>AIDMS 推論路由器｜功能與操作流程</title>
+<style>
+:root{color-scheme:light;--ink:#182b3b;--muted:#526576;--line:#dbe4eb;--accent:#087c83}*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:24px}body{margin:0;background:#f3f6f9;color:var(--ink);font:17px/1.85 "Segoe UI","Microsoft JhengHei",sans-serif}a{color:#086b91;text-underline-offset:4px}a:focus-visible{outline:3px solid #087c83;outline-offset:4px}header{background:#102b3d;color:#fff;padding:36px max(24px,calc((100vw - 1220px)/2))}header p{margin:0}.eyebrow{font-size:13px;letter-spacing:.18em;color:#7be0d4}.meta{font-size:14px;color:#c3d3df;margin-top:10px}header a{color:#a5eee5}.layout{display:grid;grid-template-columns:235px minmax(0,1fr);gap:36px;max-width:1268px;margin:36px auto;padding:0 24px}nav{position:sticky;top:24px;align-self:start;font-size:14px}nav strong{display:block;margin-bottom:12px}nav a{display:block;text-decoration:none;padding:7px 0;color:var(--muted);border-bottom:1px solid var(--line)}nav a:hover{color:var(--accent)}main{background:white;border:1px solid var(--line);border-radius:12px;padding:38px 44px;min-width:0}h1{font-size:38px;line-height:1.35;letter-spacing:-.03em;margin:0 0 20px}h1+p{font-size:21px;color:#315569;border-left:4px solid var(--accent);padding-left:20px}h2{font-size:25px;line-height:1.5;margin:44px 0 18px;padding-top:22px;border-top:1px solid var(--line)}p{margin:16px 0}li{margin:8px 0}ul,ol{padding-left:26px}.note{padding:17px 20px;background:#fff6e6;border-left:4px solid #c48a25;color:#685326;font-size:15px;margin:24px 0}pre{background:#102b3d;color:#e2f3f4;border-radius:9px;padding:23px;overflow-x:auto;font:15px/1.9 Consolas,"Microsoft JhengHei",monospace;white-space:pre}code{background:#eaf1f4;padding:2px 5px;border-radius:4px}.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:15px}th,td{padding:13px 15px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}th{background:#eaf2f5;color:#17485a}td:first-child{width:24%;font-weight:600}footer{font-size:13px;color:var(--muted);padding:20px 0 0;border-top:1px solid var(--line);margin-top:40px}@media(max-width:850px){.layout{grid-template-columns:1fr;gap:20px;margin-top:20px}nav{position:static;display:flex;gap:10px;overflow-x:auto;padding-bottom:10px}nav strong{display:none}nav a{white-space:nowrap;border:1px solid var(--line);padding:6px 10px;border-radius:6px}main{padding:26px 20px}h1{font-size:30px}h2{font-size:22px}body{font-size:16px}}@media print{body{background:#fff;font-size:11pt}header{padding:16px 0;background:#fff;color:#182b3b}header .eyebrow,header .meta,header a{color:#526576}.layout{display:block;margin:0;padding:0;max-width:none}nav{display:none}main{border:0;padding:0}h1{font-size:27pt}h2{font-size:17pt;break-after:avoid}pre,.note,tr{break-inside:avoid}pre{white-space:pre-wrap;background:#f2f5f7;color:#182b3b}a{overflow-wrap:anywhere}@page{size:A4;margin:17mm}}
+</style></head><body><header><p class="eyebrow">AIDMS · ARCHITECTURE NOTE</p><p class="meta">2026-09-10 · 討論整理／設計草案 · <a href="research.md">Markdown 原稿</a></p></header><div class="layout"><nav aria-label="文件目錄"><strong>文件內容</strong><a href="#section-1">01｜功能定位</a><a href="#section-2">02｜Project 與 Job 的關係</a><a href="#section-3">03｜新增推論路由器</a><a href="#section-4">04｜建立後的管理畫面</a><a href="#section-5">05｜請求如何處理</a><a href="#section-6">06｜自動擴縮</a><a href="#section-7">07｜開發前確認事項</a></nav><main><h1>AIDMS 推論路由器設計</h1>
+<p>在 Project 下新增「推論路由器」Tab。使用者可以建立路由器，加入既有 LLM Job，或批次建立新的 LLM Job，並在此設定自動擴縮。每個路由器提供固定的推論 endpoint，由 llm-d 協助分配請求。</p>
+<h2 id="section-1">01｜功能定位</h2>
+<p>AIDMS 已有 Project 資源分配與 Job 建立功能。本次擴充讓使用者管理「哪些 Job 一起接收推論請求」，以及這組 Job 如何隨負載增減。</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">名稱</th><th scope="col">在本設計中的意思</th></tr></thead><tbody><tr><td>Project</td><td>路由器與 Job 所屬的資源、權限範圍。</td></tr><tr><td>LLM Job</td><td>執行模型推論的工作，例如執行 vLLM＋Qwen 的 Pod。</td></tr><tr><td>推論路由器</td><td>接收請求，從指定的 LLM Job 中選擇可用 Job，轉送請求並回傳結果。</td></tr><tr><td>路由器 endpoint</td><td>提供給應用程式呼叫的固定 API 位址。</td></tr><tr><td>Job endpoint</td><td>個別 LLM Job 提供的 API 位址，由系統追蹤。</td></tr></tbody></table></div>
+<p>產品介面統一稱為「推論路由器」。llm-d 是背後採用的實作方案，使用者透過 AIDMS 操作即可。</p>
+<h2 id="section-2">02｜Project 與 Job 的關係</h2>
+<p>一個 Project 可以建立多個推論路由器；每個路由器可以選用該 Project 下的一個或多個 LLM Job。</p>
+<pre>Project A
+├─ 推論路由器 1 → LLM Job A、B
+└─ 推論路由器 2 → LLM Job C、D
+
+應用程式 → 路由器 1 的 endpoint → Job A 或 Job B
+應用程式 → 路由器 2 的 endpoint → Job C 或 Job D</pre>
+<p>同一路由器內的 Job 應提供相容的模型版本與推論 API，確保請求分配到任一 Job 都能得到預期服務。路由器只能選取所屬 Project 的 Job。</p>
+<h2 id="section-3">03｜新增推論路由器</h2>
+<p>操作入口：Project → 推論路由器 → 新增。</p>
+<p>先填寫路由器名稱，再選擇「加入既有 Job」或「批次建立 Job」。建立完成後取得固定的路由器 endpoint。</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">建立方式</th><th scope="col">使用者填寫或選擇</th><th scope="col">AIDMS 處理</th></tr></thead><tbody><tr><td>加入既有 Job</td><td>勾選本 Project 已啟用的 LLM Job。</td><td>檢查模型相容性，建立關聯，取得 Job endpoint。</td></tr><tr><td>批次建立 Job</td><td>指定模型與執行設定、每個 Job 的資源、初始 Job 數量。</td><td>檢查 Project 可用資源，批次建立 Job，準備完成後加入路由器。</td></tr></tbody></table></div>
+<p>既有 Job 的選取清單建議顯示：</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">選取</th><th scope="col">Job 名稱</th><th scope="col">模型／版本</th><th scope="col">狀態</th></tr></thead><tbody><tr><td>已選</td><td>qwen-job-a</td><td>Qwen／版本 X</td><td>可用</td></tr><tr><td>已選</td><td>qwen-job-b</td><td>Qwen／版本 X</td><td>可用</td></tr><tr><td>未選</td><td>qwen-job-c</td><td>Qwen／版本 Y</td><td>模型不相容，不可選</td></tr></tbody></table></div>
+<p>批次建立的操作範例：</p>
+<pre>路由器名稱：qwen-router
+Job 來源：批次建立 Job
+模型與執行設定：選擇 Qwen 設定
+每個 Job 的資源：指定 GPU、CPU、記憶體
+初始 Job 數量：3
+自動擴縮：關閉／開啟</pre>
+<p>按下建立後，畫面呈現建立進度與 Job 狀態。只有模型載入完成且可接收請求的 Job，才會被路由器選用。沒有可用 Job 時，顯示「尚無可用 Job」，而非已可服務。</p>
+<h2 id="section-4">04｜建立後的管理畫面</h2>
+<p>路由器清單顯示名稱、狀態、可用／已加入 Job 數量、自動擴縮開關，以及複製 endpoint 的操作。</p>
+<p>進入路由器詳情後，可執行以下操作：</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">操作</th><th scope="col">預期行為</th></tr></thead><tbody><tr><td>複製 endpoint</td><td>取得應用程式使用的固定推論網址。</td></tr><tr><td>查看 Job</td><td>顯示已加入的 Job、模型、狀態，以及來自手動加入或批次建立。</td></tr><tr><td>加入既有 Job</td><td>勾選其他相容 Job，加入此路由器。</td></tr><tr><td>批次建立 Job</td><td>依指定設定建立更多 Job，準備完成後加入。</td></tr><tr><td>移除 Job</td><td>停止將新請求送到該 Job，解除關聯；此操作本身不刪除 Job。</td></tr><tr><td>調整自動擴縮</td><td>修改最少／最多 Job 數與擴縮條件。</td></tr><tr><td>刪除路由器</td><td>移除路由器與入口；需事先定義其管理的 Job 是否一併刪除。</td></tr></tbody></table></div>
+<p>Job 數量變動時，路由器 endpoint 維持不變。新 Job 只有在使用者選取，或透過此路由器的建立／擴容流程產生時才加入。</p>
+<h2 id="section-5">05｜請求如何處理</h2>
+<ol><li>應用程式呼叫路由器 endpoint。</li><li>系統檢查呼叫者是否有權使用此路由器。</li><li>推論路由器從已加入且可用的 Job 中選擇一個。</li><li>將請求送到該 Job endpoint。</li><li>將回答或串流內容回傳給應用程式。</li></ol>
+<p>AIDMS 記錄路由器與 Job 的關聯，並透過整合機制讓 llm-d 取得目前可用的 Job。Job endpoint 改變時由系統更新，使用者不必重新輸入 IP 與 Port。</p>
+<p>Job 暫時不可用時停止派送；恢復可用後重新納入。全部 Job 都不可用時，回傳清楚的服務暫時不可用訊息。</p>
+<h2 id="section-6">06｜自動擴縮</h2>
+<p>自動擴縮設定放在推論路由器中，調整的是它所管理的 LLM Job 數量。</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">設定</th><th scope="col">意義</th></tr></thead><tbody><tr><td>啟用自動擴縮</td><td>是否依負載自動增減 Job。</td></tr><tr><td>Job 建立設定</td><td>新 Job 使用的模型、執行參數與資源需求。</td></tr><tr><td>最少 Job 數量</td><td>保持的最低容量。</td></tr><tr><td>最多 Job 數量</td><td>可擴展的數量上限，仍受 Project 資源限制。</td></tr><tr><td>擴縮條件</td><td>例如等待請求數或回應延遲，門檻由實測決定。</td></tr><tr><td>調整間隔</td><td>避免短時間反覆增加與減少 Job。</td></tr></tbody></table></div>
+<p>增加容量：負載達到條件 → AIDMS 檢查可用資源 → 建立 Job → Job 可用後加入路由。</p>
+<p>減少容量：符合縮容條件 → 停止派送新請求 → 等待既有請求完成或達到設定的等待上限 → 移除並釋放系統管理的 Job。</p>
+<p>建議先讓自動擴縮只管理依路由器建立設定產生的 Job；手動加入的既有 Job 保留原生命週期，不自動刪除。最少／最多 Job 數也先針對自動管理的 Job 計算。此規則是實作建議，需在開發前確認。</p>
+<p>當 Project 資源不足時，顯示「無法擴容」與原因，並保留目前仍可運作的 Job。</p>
+<h2 id="section-7">07｜開發前確認事項</h2>
+<p>產品方向已確定為「Project 下管理推論路由器」。以下細節仍需確認：</p>
+<ul><li>同一個 Job 是否允許同時加入多個推論路由器。</li><li>刪除路由器時，批次建立的 Job 要保留還是刪除；手動加入的 Job 建議預設保留。</li><li>固定 Job 數量模式是否需要在故障後自動補足。</li><li>AIDMS 如何把 Job 關聯、endpoint 與狀態同步給 llm-d，以及擴縮如何沿用現有資源分配流程。</li><li>路由器執行元件的部署方式；產品上的一個路由器不必固定對應一個 Pod。</li></ul>
+<aside class="note">本文為功能設計草案，依使用者描述的 AIDMS 現況整理；尚未核對現有 API 或完成 llm-d 整合測試。</aside>
+<p>參考：<a href="https://10.1.2.1:20443/api/v1/docs">AIDMS API 文件（尚未成功讀取）</a> · <a href="https://llm-d.ai/docs/architecture">llm-d 官方架構</a> · <a href="https://llm-d.ai/docs/architecture/core/inferencepool">llm-d 服務發現文件</a>。官方連結沿用先前討論資料，本次未重新查證。</p>
+<p>相關研究：<a href="../inference-engineering/aidms-evolution-inference.html">AIDMS 演進與 Inference Engineering</a>。</p><footer>以 research.md 作為維護來源；執行 assets/build.mjs 重新產生本頁。此頁可離線閱讀，未載入任何外部字型或程式。</footer></main></div></body></html>
