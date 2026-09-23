@@ -18,6 +18,7 @@ tags: [aidms, product-evolution, version-comparison]
 | Job 類型 | 提供 Instance Job、CV Job | 提供 Instance Job、LLM Job；CV Job **預計於 2026/11 版本加入** |
 | 電腦視覺（CV）功能 | 透過 CV Job 提供完整的 CV 訓練流程 | **預計於 2026/11 版本加入**參照 1.0 的 CV 功能；初期功能尚未完全齊備，但可執行完整訓練流程 |
 | LLM 推論 | 可透過 Instance Job 啟動 LLM 服務，但無參數設定介面 | 透過 LLM Job 提供簡易的視覺化操作流程，讓使用者快速建立所需的 LLM 服務並設定相關參數；目前支援 vLLM 推論引擎 |
+| 應用情境部署 | 可透過 Instance Job 執行自訂工作 | 支援一鍵式情境部署，涵蓋 RAG、LLM 與 MCP 等應用情境，協助使用者快速建立所需服務 |
 | AIDMS Backend API 調閱 | 不支援 | 支援 |
 | 資安合規 | 僅支援 HTTP 傳輸 | 支援 HTTPS 加密傳輸，提供傳輸層加密、資料完整性保護（防篡改）與伺服器身分驗證 |
 | 監控儀表板 | 僅提供 Netdata API | 整合 Grafana 與 Netdata 儀表板 |
@@ -29,7 +30,7 @@ tags: [aidms, product-evolution, version-comparison]
 
 ## Job 用詞說明
 
-- **Instance Job：**提供使用者可操作的運算環境，供 AI 開發、測試或執行自訂工作使用；1.0 也可透過 Instance Job 啟動 LLM 服務。
+- **Instance Job：**提供使用者可操作的運算環境，供 AI 開發、測試或執行自訂工作使用；1.0 與 2.0 均可透過 Instance Job 啟動 LLM 服務。
 - **CV Job：**執行電腦視覺模型的訓練工作。1.0 已提供相關流程；2.0 預計於 2026/11 版本加入。
 - **LLM Job：**執行大型語言模型的推論服務。2.0 目前以 vLLM 作為支援的推論引擎。
 
