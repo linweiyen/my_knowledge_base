@@ -150,6 +150,8 @@ tags: [gpu-sharing, mps, mig, multi-tenancy]
 
 ## 目前落實範圍
 
+2026-10-27：依使用者要求，將 `products/agent-pack/kick-off/` 簡報由 26 頁精簡為 10 頁，並依 2026-10-22 決策更新內容（預整合 Agent 以驗證過的 image 提供，情境 C 涵蓋自製與驗證 image）。原 26 頁版本保留於 Git 歷史，不另存快照。`build-report.mjs` 的 marked 匯入路徑為使用者本機 codex 快取，代理在本機 Linux 環境執行時以 `npm install marked` 後的替換路徑副本產生 HTML。
+
 2026-10-22：使用者核定 Agent Pack 第一版採「通用 Docker 容器平台＋驗證過的 image 目錄」：預整合 Agent（OpenClaw、Hermes 等）以普通 Docker image 提供，與客戶自製 image 共用同一管理機制，不把 NemoClaw／OpenShell 堆疊納入產品架構；OpenClaw／Hermes 脫離包裝後的可用性待 spike 驗證。決策紀錄存於 `products/agent-pack/decisions/pre-integrated-agents-as-images/`，並新增 `products/agent-pack/decisions/` 入口。該決策的 HTML 以 Python `build-report.py`（python-markdown）產生，因既有 `build-report.mjs` 依賴本機 codex 快取中的 marked 路徑。
 
 2026-10-21：Agent Pack 為單機 Agent 產品研究。使用者因維護考量，明確指定採 Docker、不採 Kubernetes。此為 Agent Pack 的部署原則，不代表 AIDMS 架構變更；具體 Docker 拓樸（含是否沿用研究中的 DinD）仍需工程驗證。
