@@ -1,0 +1,459 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Agent Pack 全庫閱讀與單機管理系統研究</title><style>*{box-sizing:border-box}body{margin:0;background:#f5f7fb;color:#19283b;font:17px/1.85 system-ui,"Segoe UI","Noto Sans TC",sans-serif}main{max-width:1100px;margin:auto;padding:35px 28px 80px}nav{display:flex;gap:20px;flex-wrap:wrap;font-size:14px;margin-bottom:30px}a{color:#175eaa;text-underline-offset:3px}h1{font-size:clamp(28px,4vw,42px);line-height:1.35}h2{margin-top:3em;border-top:1px solid #d7dfe9;padding-top:25px}h3{margin-top:2em}p,li{overflow-wrap:anywhere}table{width:100%;border-collapse:collapse;background:white;font-size:15px;line-height:1.65}th,td{border:1px solid #dbe2ec;padding:12px 15px;text-align:left;vertical-align:top}th{background:#eaf0f8}.table-wrap{overflow-x:auto;margin:22px 0}code{background:#e9edf4;padding:2px 5px;border-radius:4px;font-size:.88em}pre{overflow:auto;padding:18px;background:#e9edf4}blockquote{border-left:4px solid #447cac;padding-left:20px}.meta{color:#53667d;font-size:14px}.toc{padding:20px 26px;background:#fff;border:1px solid #dbe2ec;border-radius:12px}.toc a{display:block;font-size:15px;margin:5px 0}footer{margin-top:60px;border-top:1px solid #ddd;padding-top:16px;color:#53667d;font-size:13px}@media(max-width:620px){main{padding:22px 16px 50px}table{min-width:700px}}@media print{body{background:white}main{max-width:none}.toc,nav{display:none}a{color:inherit}}</style></head><body><main><nav><a href="../index.html">Agent Pack 入口</a><a href="../../../index.html">知識庫</a><a href="research.md">Markdown 原文</a></nav><div class="meta">Agent Pack 研究 · 2026-10-21 · 草稿／既有實測未重跑</div><details class="toc"><summary>章節目錄（11 節）</summary><a href="#section-1">1. 版本、閱讀範圍與限制</a><a href="#section-2">2. 全庫內容地圖</a><a href="#section-3">3. 系統架構：目前到底安裝了什麼</a><a href="#section-4">4. 已有能力與管理產品的落差</a><a href="#section-5">5. 會直接決定規格的限制</a><a href="#section-6">6. 比較數據：保留條件，避免直接排勝負</a><a href="#section-7">7. 文件矛盾與靜態檢視發現</a><a href="#section-8">8. 單機管理系統第一版建議</a><a href="#section-9">9. 下一輪工程驗證清單</a><a href="#section-10">10. 定案前仍需決定什麼</a><a href="#section-11">11. 延伸閱讀</a></details><h1>Agent Pack：全庫閱讀與單機管理系統研究</h1>
+<p><strong>這份 repository 是有實作腳本的安裝、維運與實測研究庫，可以作為單機管理系統的工程基礎，但還不是完成的管理產品。</strong> 它最有價值的內容，是記錄安裝、設定、重建、憑證、記憶及故障復原的真實邊界。產品開發要把這些邊界轉成使用者可理解、可恢復、可驗收的操作。</p>
+<p>依使用者描述，AIDMS 負責多 GPU node 管理；本研究聚焦「安裝在一台電腦上的簡易管理系統」。兩者如何整合尚未核定。</p>
+<h2 id="section-1">1. 版本、閱讀範圍與限制</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>項目</th>
+<th>本次範圍</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Repository</td>
+<td><a href="https://gitlab.com/leadtek/agentpack">leadtek/agentpack</a></td>
+</tr>
+<tr>
+<td>來源</td>
+<td>main 分支完整 ZIP 快照</td>
+</tr>
+<tr>
+<td>頁面顯示的 HEAD</td>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/commit/d3fe1734fa95d87760145a823975eeebff8cbb6b">d3fe1734fa95d87760145a823975eeebff8cbb6b</a>，2026-09-21 合併提交</td>
+</tr>
+<tr>
+<td>取得與閱讀日期</td>
+<td>2026-10-21，Asia/Taipei</td>
+</tr>
+<tr>
+<td>內容</td>
+<td>62 個檔案，共 1,477,764 bytes；<a href="source-inventory.html">完整來源索引</a> 含逐檔連結、用途與雜湊</td>
+</tr>
+<tr>
+<td>方法</td>
+<td>全庫逐檔盤點，文件與 HTML 正文閱讀、部署設定與腳本靜態檢視、重要主張交叉核對；不是逐行程式碼稽核</td>
+</tr>
+<tr>
+<td>未包含</td>
+<td>其他分支、完整 Git 歷史、Issues/MRs、未追蹤的 .env、工程師機器資料、外部資料集及上游完整原始碼</td>
+</tr>
+</tbody></table></div>
+<p><strong>「repo 實測紀錄」指 Justin 文件記載的既有測試，本次沒有重新實機驗證。</strong> 「程式碼觀察」指下載快照的靜態行為；「建議」是本研究提出的產品方向，尚未核定。未安裝、建置或執行 repo 的程式及 benchmark，也未修改 GitLab。<code>verified: null</code> 表示既有實測與外部事實未重新驗證。下方來源連結固定在上述提交，下載 ZIP 的 SHA-256 記在來源索引。</p>
+<h2 id="section-2">2. 全庫內容地圖</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>區域</th>
+<th align="right">檔案數</th>
+<th>內容與定位</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>根目錄</td>
+<td align="right">3</td>
+<td>README、Apache 2.0 LICENSE、.gitignore</td>
+</tr>
+<tr>
+<td>docker-dind</td>
+<td align="right">8</td>
+<td>現行部署包裝、雙 Agent 上線、設定範本、自癒、relay 與 D1–D32 除錯紀錄</td>
+</tr>
+<tr>
+<td>docker-dood</td>
+<td align="right">7</td>
+<td>前一代 sibling-container 部署；保留演進與除錯經驗，非新部署入口</td>
+</tr>
+<tr>
+<td>docs</td>
+<td align="right">22</td>
+<td>NemoClaw 通用管理、OpenClaw/Hermes 設定、比較研究、電商網站 policy</td>
+</tr>
+<tr>
+<td>reports</td>
+<td align="right">7</td>
+<td>六份 HTML 報告與 README；內容有些落後原始筆記</td>
+</tr>
+<tr>
+<td>scripts</td>
+<td align="right">15</td>
+<td>10 支 benchmark、1 支共用函式、2 支歷史安裝腳本及 README、1 支外部 watchdog</td>
+</tr>
+</tbody></table></div>
+<p>六份 HTML 分別面向主管總覽、Agent 比較、架構圖、設定分層、情境操作與風險維運。<a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/reports/README.md">reports/README</a> 說明內容衝突時應回到 docs 查證。全庫沒有獨立的 Agent Pack 管理前端、管理後端或產品資料庫實作，也未提供 AIDMS cluster/node 管理程式。</p>
+<h2 id="section-3">3. 系統架構：目前到底安裝了什麼</h2>
+<p>實體主機的 Docker 執行一個 privileged 外層容器，裡面包含 NemoClaw CLI、OpenShell gateway 與巢狀 dockerd，再由巢狀 dockerd 管理 OpenClaw、Hermes 各自的 sandbox。模型服務透過 API 接入，<strong>沒有一併部署在這份 Compose 裡</strong>。</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>元件</th>
+<th>角色</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>NemoClaw</td>
+<td>sandbox 上線、設定、policy、憑證接線、快照及生命週期管理</td>
+</tr>
+<tr>
+<td>OpenShell</td>
+<td>gateway、受管執行環境、網路/檔案控制、推論路由等機制</td>
+</tr>
+<tr>
+<td>OpenClaw</td>
+<td>Agent runtime，自己的 JSON 設定、工作區、session、TaskFlow</td>
+</tr>
+<tr>
+<td>Hermes</td>
+<td>另一個 runtime，自己的 YAML/env、HTTP API、記憶資料庫、Kanban</td>
+</tr>
+<tr>
+<td>模型推論端點</td>
+<td>由使用者另外提供；範本接到區網上的 OpenAI 相容服務</td>
+</tr>
+</tbody></table></div>
+<p>部署演進為 host 原生 → DooD → DinD。DooD 掛載 host Docker socket，並處理 host 系統執行檔與相同路徑掛載；DinD 把狀態收進 named volumes，減少這類跨邊界路徑管理問題。這是 <strong>repo 的實務選型，不能轉述為 NVIDIA 官方推薦 DinD</strong>。privileged 外層容器也不能因為沒有掛 host socket，就當成低權限安全保證。<a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dind/README.md">部署說明</a></p>
+<h3>單機安裝與全部在本機推論，要分開定義</h3>
+<p>現有腳本能把 Agent 環境裝在一台電腦，但不代表包含模型下載、模型服務、GPU/VRAM 管理，或斷網可用。單機產品需選定支援範圍：只連已有模型 API、同時管理本機模型，或兩者皆可。</p>
+<p><strong>建議將 Agent 環境管理與模型服務管理分成兩個可分期模組。</strong> 若使用遠端模型、搜尋 API、MCP、通訊服務，也不能宣稱資料完全不出機。與 AIDMS 的連結可先研究為「使用其提供的推論端點」，不預設已完成產品整合。</p>
+<h3>資料與憑證分層</h3>
+<p>狀態分成 gateway 藍圖、gateway 憑證、sandbox 設定及使用者資料；物理儲存主要是外層 home 與巢狀 Docker data 兩個 volumes。repo 的 DinD 實測顯示 <code>/sandbox</code> 在容器寫入層，沒有每個 sandbox 獨立的 named volume，資料保留依賴應用層 snapshot/restore。<strong>外層 volume 還在，不等於某次 sandbox 重建完整保住資料。</strong> <a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/storage-locations-dind-vs-host.md">儲存總覽</a></p>
+<p>受管密鑰流程與藍圖的 hash/reference 分離；但 OpenClaw Tavily workaround 直接寫入設定，不能推定所有密鑰都不落 sandbox 磁碟。產品必須逐條檢查實際設定路徑。</p>
+<h2 id="section-4">4. 已有能力與管理產品的落差</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>功能</th>
+<th>repo 已有基礎</th>
+<th>產品仍需補足</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>安裝</td>
+<td>Compose、CLI 安裝、onboard、已知修法</td>
+<td>安裝精靈、前置檢查、可理解的進度、失敗續跑</td>
+</tr>
+<tr>
+<td>Agent 管理</td>
+<td>兩類 Agent 啟用開關、名稱、port</td>
+<td>動態實例清單、真正的啟停狀態、能力差異；現有開關不是通用動態管理器</td>
+</tr>
+<tr>
+<td>模型連線</td>
+<td>endpoint/model/provider 設定</td>
+<td>可達性、工具能力與模型 metadata 檢查，切換影響預覽</td>
+</tr>
+<tr>
+<td>搜尋與通道</td>
+<td>Tavily、Telegram 流程與事故紀錄</td>
+<td>憑證表單、端到端測試、重建後恢復與回歸檢查</td>
+</tr>
+<tr>
+<td>擴充</td>
+<td>host 層 Skill/MCP 安裝已有紀錄</td>
+<td>來源、版本、權限、依賴及實際工具可呼叫檢查</td>
+</tr>
+<tr>
+<td>Plugin</td>
+<td>OpenClaw 實例、Hermes build-time 研究</td>
+<td>依 Agent 分別建立支援矩陣，不能統一當成熱安裝</td>
+</tr>
+<tr>
+<td>記憶</td>
+<td>檔案、資料庫與測試腳本</td>
+<td>區分同對話上下文、跨對話回憶、索引健康及使用者隔離</td>
+</tr>
+<tr>
+<td>任務/排程</td>
+<td>TaskFlow、Kanban、cron 指令與紀錄</td>
+<td>真正取消、逾時收尾、資源預算、時區、通知投遞</td>
+</tr>
+<tr>
+<td>監控</td>
+<td>status/logs/recover/rebuild、HTTP watchdog</td>
+<td>分層健康、退化/維護狀態、告警與復原歷程</td>
+</tr>
+<tr>
+<td>備份</td>
+<td>snapshot/restore/backup-all、涵蓋範圍核對</td>
+<td>完整性、遺漏資料、憑證重接與整機復原演練</td>
+</tr>
+<tr>
+<td>資源</td>
+<td>每 Agent CPU/RAM 設定入口</td>
+<td>安全預設、總量預算、同機模型共存；範本留空代表無上限</td>
+</tr>
+<tr>
+<td>更新</td>
+<td>版本配對及 migration 事故經驗</td>
+<td>可重建發行包、相容矩陣、資料遷移與回復策略</td>
+</tr>
+</tbody></table></div>
+<p>能力盤點不等於全部完成同一版本驗收。Kanban 失敗保護、Plugin、自動化 API 核准行為、跨平台支援等項目仍有只查文件/help 的部分。</p>
+<h2 id="section-5">5. 會直接決定規格的限制</h2>
+<h3>5.1 多 Agent 不等於各自自由切模型</h3>
+<p>repo 指出一個 OpenShell gateway 共用一條活的推論路由，多個已登記 sandbox（含 stopped）會影響模型切換的相容檢查。不能直接在每個 Agent 下提供任意切模型選單。</p>
+<p>候選方向是獨立 gateway、同端點多模型路由，或第一版先限制共用模型。獨立 gateway 尚非無痛答案：DooD 歷史曾有影子登記及名稱解析誤刪；新拓樸須重測。多模型 proxy/固定模型別名還需處理 context window metadata 不同步。<a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/inference-provider-limits-and-switching.md">推論限制與切換</a></p>
+<h3>5.2 儲存設定可能觸發重建與停機</h3>
+<p>policy 即時異動、Agent process restart、sandbox rebuild、重新 onboard、destroy 的影響不同。通道異動會牽動 rebuild；資源與部分建立時設定要 recreate。備份只涵蓋 manifest 指定內容。</p>
+<p>管理系統應先產生操作計畫：影響哪些 Agent、預期停機、備份範圍、需要重套的設定與失敗恢復點。後端再依「備份 → 套用 → 恢復設定 → 功能驗證」執行，不能只給一個沒有進度的儲存按鈕。<a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/rebuild-vs-recreate.md">生命週期邊界</a></p>
+<h3>5.3 健康必須測到使用者實際走的路徑</h3>
+<p>曾有 forward 顯示 running，HTTP 卻不轉發；設定存在，工具卻未出現。entrypoint 已有約每 120 秒做 HTTP 探測/修復的 watchdog，但不是完整產品健康檢查。</p>
+<p>介面應區分容器、Agent process、Dashboard HTTP/WebSocket、推論、工具、通道、排程與通知。容器 Up 不等於可用；憑證已存也不等於搜尋成功。<a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/monitoring-and-recovery-guide.md">監控復原</a></p>
+<h3>5.4 共通介面需要 Agent 適配層</h3>
+<p>兩者設定格式、session、任務與 API 不同，連 CLI 的 <code>-m</code> 意義都不同。OpenClaw session reset 不能直接用於 Hermes。可以提供共通上層概念，但後端必須依 Agent 實作，並顯示不支援或未驗證能力。<a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/hermes/command-reference.md">Hermes 差異</a></p>
+<h3>5.5 完成與停止都要獨立驗證</h3>
+<p>repo 記錄產檔失敗卻回報成功，也記錄 client timeout 後工作仍執行。特定 OpenClaw TaskFlow 事故在 restart 後復活；Hermes 普通 chat process 可從 OS 層清理，但不能推廣到所有 Kanban worker。</p>
+<p>建議任務狀態區分執行中、等待核准、正在取消、已停止、成功、失敗、結果待驗證。產檔需檢查本次產物，取消需確認實際執行及模型請求結束。提示詞要求誠實不能取代驗證。</p>
+<h3>5.6 單機仍需資源與存取設計</h3>
+<p>CPU/RAM 範本預設無上限，瀏覽器 process 曾耗盡 host 資源。同機若跑模型，要預留推論、OS 與管理服務預算。Hermes 未認證 LAN proxy 已被 repo 判定停用；應明確區分本機存取與有認證的遠端管理。<a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/hermes/browser-chromium-setup.md">瀏覽器及資源事故</a></p>
+<h2 id="section-6">6. 比較數據：保留條件，避免直接排勝負</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>repo 測試</th>
+<th>OpenClaw</th>
+<th>Hermes</th>
+<th>解讀限制</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>08-18 首句回應，各 n=5</td>
+<td>5/5，6.7 秒</td>
+<td>5/5，8.7 秒</td>
+<td>基本回應測試，不代表冷安裝或長期可靠度</td>
+</tr>
+<tr>
+<td>同日 Web Search，各 n=5</td>
+<td>5/5，11.7 秒</td>
+<td>5/5，12.4 秒</td>
+<td>完成設定後的結果；較舊手冊仍標 Hermes 未完成驗證</td>
+</tr>
+<tr>
+<td>同日一般摘要，各 n=5</td>
+<td>22.4 秒；prompt 33,626</td>
+<td>18.9 秒；prompt 20,608</td>
+<td>此任務 Hermes 較快且較省，不能說它永遠耗更多 token</td>
+</tr>
+<tr>
+<td>PDF → PPTX 歷史測試</td>
+<td>原記錄 2/5，124.3 秒；有漏查產出路徑偏差</td>
+<td>加 --yolo 後 5/5，251.4 秒；兩次 client 逾時但已產檔</td>
+<td>核准模式、token 配置與產物驗證條件不完全對齊，不能作對外勝率</td>
+</tr>
+<tr>
+<td>09-01 同 session，各 30 題</td>
+<td>24/30 PASS，0 stalled</td>
+<td>17/30 PASS，10/30 stalled；有效 20 題中 17 PASS</td>
+<td>有效樣本 85% 不能直接和全體 80% 比；需呈現端到端成功與 stalled</td>
+</tr>
+<tr>
+<td>同輪跨 session，Hermes 8 題</td>
+<td>未對稱重跑，受 D25 混淆</td>
+<td>8/8 stalled</td>
+<td>該輪 CLI resume 流程失敗，不能推廣到所有 UI/API 路徑</td>
+</tr>
+</tbody></table></div>
+<p>來源：<a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/comparison/openclaw-hermes-comparison.md">比較研究 §4</a>。不同模型、版本、設定與輪次不能混成總排行榜。<code>--yolo</code> 改變核准條件，不能為提高測試勝率就當成產品預設。「Hermes 永遠不編造產物」「OpenClaw 一定較擅長調度」均無足夠證據支持。</p>
+<h2 id="section-7">7. 文件矛盾與靜態檢視發現</h2>
+<p>下列未修改原始 repo，也未一律判定為已證實 bug。</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>編號</th>
+<th>觀察</th>
+<th>本次處理與待驗證</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>C01</td>
+<td>子文件稱 DinD 為官方正式部署，根 README 說 repo 自建</td>
+<td>採後者範圍限定，統一措辭</td>
+</tr>
+<tr>
+<td>C02</td>
+<td>部分文件說手動 policy 一律被 rebuild 清掉；另有更正會回寫藍圖</td>
+<td>不能採一律清除說法；Tavily workaround 仍有特定遺失紀錄，逐項測試</td>
+</tr>
+<tr>
+<td>C03</td>
+<td>Quick Start 說 provider=none 可避免搜尋崩潰；D25 說 memory_search 仍失敗</td>
+<td>分開 provider 與 SQLite 索引缺陷，不能宣稱完整搜尋已修復</td>
+</tr>
+<tr>
+<td>C04</td>
+<td>Hermes 手冊標搜尋未完整驗證，比較表有 n=5 成功</td>
+<td>對齊日期、條件與驗證狀態</td>
+</tr>
+<tr>
+<td>C05</td>
+<td>reports/05 仍教 memory index --force、舊 Chromium 步驟</td>
+<td>應按 D25 與 09-10 browser 文件更新</td>
+</tr>
+<tr>
+<td>C06</td>
+<td>reports/06 說備份路徑/upload/download 未實測，backup guide 已有 09-02 驗證</td>
+<td>更新報告，備份範圍與憑證重接仍分開確認</td>
+</tr>
+<tr>
+<td>C07</td>
+<td>SOUL.md、state.db、Dashboard profile 路徑不一致</td>
+<td>按版本/profile 實測，勿硬寫全域路徑</td>
+</tr>
+<tr>
+<td>C08</td>
+<td>rebuild-vs-recreate §5 的 Hermes 補設定範例用 openclaw 且 key 命名混用</td>
+<td>不能直接照抄，按 Agent schema 讀回與驗證</td>
+</tr>
+<tr>
+<td>C09</td>
+<td>browser 文件改正 default-- 命名，entrypoint race guard 仍只匹配舊名稱</td>
+<td>靜態上可能漏新容器，需驗證啟動競速防護</td>
+</tr>
+<tr>
+<td>C10</td>
+<td>D30 說 bridge 存取需 0.0.0.0 forward，.env.example 卻仍註解該開關</td>
+<td>驗證範本首次啟動的 host 存取與 host 側暴露介面</td>
+</tr>
+<tr>
+<td>C11</td>
+<td>Hermes startup forward-open 依賴 LAN_PORT，範本註解；watchdog 修復卻一律 start 0.0.0.0</td>
+<td>分開容器內 forward 與 host/LAN 存取；不能靠後續自癒充當安裝驗收</td>
+</tr>
+<tr>
+<td>C12</td>
+<td>onboard 失敗後容器保持存活，Compose 無 Agent healthcheck</td>
+<td>是方便診斷的設計；UI 必須顯示失敗或退化，不能只看 Up</td>
+</tr>
+<tr>
+<td>C13</td>
+<td>每次啟動先下載安裝腳本，即使 CLI 存在；另有動態 npm audit fix --force</td>
+<td>無外網啟動與可重建發行尚無保證，需固定依賴並測試</td>
+</tr>
+<tr>
+<td>C14</td>
+<td>repo 有 Apache 2.0 LICENSE，部署還下載其他元件</td>
+<td>不推定全部依賴與模型都同授權；本次未做授權法律審查</td>
+</tr>
+</tbody></table></div>
+<p>靜態依據：<a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dind/docker-entrypoint.sh">entrypoint</a>、<a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dind/.env.example">設定範本</a>、<a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dind/docker-compose.yml">Compose</a>。此外，部分深入紀錄只以 wiki-style 連到工程師個人 memory，沒有落在 repo，不能視為已取得完整證據。</p>
+<p>benchmark 也有邊界：vLLM 全域 metrics 差值可能受其他請求污染；部分判定依賴 CLI 文字解析；產檔只驗證 ZIP/slide 存在，未驗證內容與畫面品質；LongMemEval 原始資料及大部分逐次輸出未隨庫提供。重現前需補資料與模型設定。</p>
+<h2 id="section-8">8. 單機管理系統第一版建議</h2>
+<p>以下是假設「一台機器、一位管理者、少數 Agent 實例」的建議草案，尚未核定。</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>管理頁面</th>
+<th>第一版能做什麼</th>
+<th>驗收重點</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>總覽</td>
+<td>主機資源、Agent、模型連線、異常</td>
+<td>有檢查時間，指出哪一層失敗</td>
+</tr>
+<tr>
+<td>初次設定</td>
+<td>選 Agent、填模型端點、驗證第一句對話</td>
+<td>乾淨主機完成，不要求手改容器檔案</td>
+</tr>
+<tr>
+<td>Agent</td>
+<td>支援的實例建立、啟停、對話入口、設定</td>
+<td>結果符合實際狀態，資料保留範圍清楚</td>
+</tr>
+<tr>
+<td>模型連線</td>
+<td>本機/遠端 API、模型 ID、憑證</td>
+<td>切換前檢查共享路由衝突與 metadata</td>
+</tr>
+<tr>
+<td>功能與擴充</td>
+<td>搜尋、首個通道、Skill、受管 MCP</td>
+<td>真正可呼叫，重建後做回歸檢查</td>
+</tr>
+<tr>
+<td>任務/排程</td>
+<td>執行紀錄、核准等待、取消、時區、通知</td>
+<td>取消後停止推論；執行與投遞成功分開</td>
+</tr>
+<tr>
+<td>維護</td>
+<td>診斷、日誌、備份、還原、更新與修復</td>
+<td>備份不完整時阻止高風險步驟，失敗可接續</td>
+</tr>
+</tbody></table></div>
+<p>後端建議包含本機管理服務、各 Agent 適配、操作工作佇列、期望設定儲存、健康探測與機密儲存。期望設定能產生實際配置，重建後自動恢復及比對；避免以容器裡散落的手動補丁作為唯一真相。</p>
+<p>建議第一版先有一個預設 Agent，另一個列為可選實驗功能，降低支援矩陣。現有資料不足以直接指定勝者；先用目標使用者的 3–5 個任務，在出貨硬體與固定版本上驗收再選。本期先不加入多 node 排程、跨機資源池、叢集 GPU 分配及未驗證的多租戶承諾。本機模型管理另開規格。</p>
+<h2 id="section-9">9. 下一輪工程驗證清單</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>優先</th>
+<th>工作</th>
+<th>完成條件</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>P0</td>
+<td>固定版本、目標 OS/硬體</td>
+<td>乾淨安裝可重現，有實際依賴清單</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>預設 Dashboard 存取鏈</td>
+<td>安裝結束即能由指定入口存取，非靠之後 watchdog 補好</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>搜尋/通道/Skill/MCP 保存矩陣</td>
+<td>restart/rebuild/recreate 後核對設定、憑證與真實功能</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>取消任務與資源控制</td>
+<td>頂層、子任務、瀏覽器與模型請求可收尾，主機仍可操作</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>重測 OpenClaw D25、Hermes D20</td>
+<td>以出貨版本及實際 UI/API 路徑驗證，不沿用舊版勝率</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>備份與整機復原</td>
+<td>涵蓋遺漏路徑、憑證重接及失敗復原演練</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>開機自啟、斷網、模型離線</td>
+<td>狀態清楚且可恢復；不支援離線則寫入規格</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>排程時區/投遞/重啟恢復</td>
+<td>Asia/Taipei 設定後如期觸發，失敗可追溯</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>長期運作與更新</td>
+<td>建議先做至少 7 天觀察，再延長至出貨標準；非既有測試結果</td>
+</tr>
+</tbody></table></div>
+<h2 id="section-10">10. 定案前仍需決定什麼</h2>
+<ol>
+<li>主要使用者及三個核心任務：個人助理、研究、開發或電商巡查？</li>
+<li>單機是否包含模型服務？可否接外部 API 或 AIDMS 的推論端點？</li>
+<li>出貨形式是 ISO 選裝、Linux 安裝包、容器套件或其他？Windows/macOS DinD 不能由本庫推定已支援。</li>
+<li>一人或多人？對話、記憶、檔案與權限如何隔離？</li>
+<li>預設 Agent、必備擴充/通道、可接受停機與遠端管理方式？</li>
+</ol>
+<p><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/iso-product-spec.md">ISO 草案</a> 的出廠準備／首次設定分工仍有價值，但文件自己註明早於 DinD 與後續發現，未整體重寫。兩個 vLLM、fallback、多租戶等不能當成已核定或實測完成。</p>
+<p>市場調查檔含 ASUS/Dell/Beelink 與雲端服務，但本次只閱讀庫內研究，未重查外部網站、效能、價格及預裝範圍，不把那些舊說法當作規格的已驗證前提。</p>
+<h2 id="section-11">11. 延伸閱讀</h2>
+<ul>
+<li><a href="source-inventory.html">62 個檔案完整來源索引</a></li>
+<li><a href="../index.html">Agent Pack 研究入口</a></li>
+<li><a href="../../../index.html">知識庫首頁</a></li>
+</ul>
+<p>本研究只將分析與索引存入知識庫，未匯入產品部署程式碼，未 commit/push、部署或更改原始 repo。</p>
+<footer>Markdown 為內容來源。修改正文後請重新產生本頁；來源版本及證據限制以正文為準。</footer></main></body></html>

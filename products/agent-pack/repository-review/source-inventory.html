@@ -1,0 +1,379 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Agent Pack 完整來源索引</title><style>*{box-sizing:border-box}body{margin:0;background:#f5f7fb;color:#19283b;font:17px/1.85 system-ui,"Segoe UI","Noto Sans TC",sans-serif}main{max-width:1100px;margin:auto;padding:35px 28px 80px}nav{display:flex;gap:20px;flex-wrap:wrap;font-size:14px;margin-bottom:30px}a{color:#175eaa;text-underline-offset:3px}h1{font-size:clamp(28px,4vw,42px);line-height:1.35}h2{margin-top:3em;border-top:1px solid #d7dfe9;padding-top:25px}h3{margin-top:2em}p,li{overflow-wrap:anywhere}table{width:100%;border-collapse:collapse;background:white;font-size:15px;line-height:1.65}th,td{border:1px solid #dbe2ec;padding:12px 15px;text-align:left;vertical-align:top}th{background:#eaf0f8}.table-wrap{overflow-x:auto;margin:22px 0}code{background:#e9edf4;padding:2px 5px;border-radius:4px;font-size:.88em}pre{overflow:auto;padding:18px;background:#e9edf4}blockquote{border-left:4px solid #447cac;padding-left:20px}.meta{color:#53667d;font-size:14px}.toc{padding:20px 26px;background:#fff;border:1px solid #dbe2ec;border-radius:12px}.toc a{display:block;font-size:15px;margin:5px 0}footer{margin-top:60px;border-top:1px solid #ddd;padding-top:16px;color:#53667d;font-size:13px}@media(max-width:620px){main{padding:22px 16px 50px}table{min-width:700px}}@media print{body{background:white}main{max-width:none}.toc,nav{display:none}a{color:inherit}}</style></head><body><main><nav><a href="../index.html">Agent Pack 入口</a><a href="../../../index.html">知識庫</a><a href="source-inventory.md">Markdown 原文</a></nav><div class="meta">Agent Pack 研究 · 2026-10-21 · 草稿／既有實測未重跑</div><details class="toc"><summary>章節目錄（6 節）</summary><a href="#section-1">根目錄（3 檔）</a><a href="#section-2">docker-dind（8 檔）</a><a href="#section-3">docker-dood（7 檔）</a><a href="#section-4">docs（22 檔）</a><a href="#section-5">reports（7 檔）</a><a href="#section-6">scripts（15 檔）</a></details><h1>Agent Pack：62 個檔案來源索引</h1>
+<p>取得日期：2026-10-21。來源為 GitLab 已登入頁面下載的 main 分支完整 ZIP；頁面觀察到的 HEAD 為 <a href="https://gitlab.com/leadtek/agentpack/-/commit/d3fe1734fa95d87760145a823975eeebff8cbb6b">d3fe1734fa95d87760145a823975eeebff8cbb6b</a>。</p>
+<p>逐檔索引與靜態閱讀不代表逐行程式碼稽核，也不代表本次執行過安裝或測試。原始碼沒有複製進研究知識庫。</p>
+<ul>
+<li>62 個檔案，1,477,764 bytes。</li>
+<li>ZIP SHA-256：<code>D553AB5B8B9420CC048F4CD374AD800D2FF722FE8F59EF88D00FCAC521CF6D5A</code></li>
+<li><a href="index.html">研究正文</a> · <a href="source-inventory.json">機器可讀索引／逐檔 SHA-256</a></li>
+</ul>
+<h2 id="section-1">根目錄（3 檔）</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>檔案／固定版本來源</th>
+<th align="right">Bytes</th>
+<th>用途與閱讀定位</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/.gitignore">.gitignore</a></td>
+<td align="right">492</td>
+<td>排除本機秘密、log、產物等檔案</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/LICENSE">LICENSE</a></td>
+<td align="right">11,337</td>
+<td>此 repository 的 Apache 2.0 授權</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/README.md">README.md</a></td>
+<td align="right">25,312</td>
+<td>全庫定位、版本與文件入口</td>
+</tr>
+</tbody></table></div>
+<h2 id="section-2">docker-dind（8 檔）</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>檔案／固定版本來源</th>
+<th align="right">Bytes</th>
+<th>用途與閱讀定位</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dind/.env.example">docker-dind/.env.example</a></td>
+<td align="right">10,444</td>
+<td>DinD Agent、模型、通道、資源設定範本</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dind/docker-compose.yml">docker-dind/docker-compose.yml</a></td>
+<td align="right">7,710</td>
+<td>外層 gateway、volumes、ports 與可選代理服務</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dind/docker-entrypoint.sh">docker-dind/docker-entrypoint.sh</a></td>
+<td align="right">68,019</td>
+<td>啟動、onboard、修補、forward 與內建 watchdog</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dind/Dockerfile">docker-dind/Dockerfile</a></td>
+<td align="right">7,632</td>
+<td>Ubuntu 外層映像、工具與巢狀 Docker 依賴</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dind/hermes-dashboard-lan-proxy.conf.template">docker-dind/hermes-dashboard-lan-proxy.conf.template</a></td>
+<td align="right">2,185</td>
+<td>非預設的 Hermes LAN nginx 代理範本</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dind/README.md">docker-dind/README.md</a></td>
+<td align="right">29,862</td>
+<td>現行 DinD 安裝、操作與架構說明</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dind/scripts/hermes-dashboard-tunnel.py">docker-dind/scripts/hermes-dashboard-tunnel.py</a></td>
+<td align="right">5,910</td>
+<td>Hermes loopback TCP relay 輔助程式</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dind/troubleshooting.md">docker-dind/troubleshooting.md</a></td>
+<td align="right">204,182</td>
+<td>D1–D32 事故、修法與後續更正</td>
+</tr>
+</tbody></table></div>
+<h2 id="section-3">docker-dood（7 檔）</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>檔案／固定版本來源</th>
+<th align="right">Bytes</th>
+<th>用途與閱讀定位</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dood/.env.example">docker-dood/.env.example</a></td>
+<td align="right">8,630</td>
+<td>前代 DooD 設定範本</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dood/docker-compose.yml">docker-dood/docker-compose.yml</a></td>
+<td align="right">3,195</td>
+<td>host socket 與 sibling-container 部署</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dood/docker-entrypoint.sh">docker-dood/docker-entrypoint.sh</a></td>
+<td align="right">24,028</td>
+<td>前代啟動、onboard、修補與 forward</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dood/Dockerfile">docker-dood/Dockerfile</a></td>
+<td align="right">2,423</td>
+<td>DooD 外層映像與工具依賴</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dood/hermes-dashboard-lan-proxy.conf.template">docker-dood/hermes-dashboard-lan-proxy.conf.template</a></td>
+<td align="right">1,728</td>
+<td>前代 Hermes LAN proxy 範本</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dood/README.md">docker-dood/README.md</a></td>
+<td align="right">25,233</td>
+<td>前代部署入口與限制</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dood/troubleshooting.md">docker-dood/troubleshooting.md</a></td>
+<td align="right">54,635</td>
+<td>前代 storage、gateway、session 與路由事故</td>
+</tr>
+</tbody></table></div>
+<h2 id="section-4">docs（22 檔）</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>檔案／固定版本來源</th>
+<th align="right">Bytes</th>
+<th>用途與閱讀定位</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/comparison/openclaw-hermes-comparison.md">docs/comparison/openclaw-hermes-comparison.md</a></td>
+<td align="right">73,650</td>
+<td>比較總表、實測數據、判讀條件與限制</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/hermes/browser-chromium-setup.md">docs/hermes/browser-chromium-setup.md</a></td>
+<td align="right">59,638</td>
+<td>Chromium、agent-browser、policy、資源與新版命名修正</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/hermes/command-reference.md">docs/hermes/command-reference.md</a></td>
+<td align="right">33,234</td>
+<td>Hermes CLI、設定、API、記憶與生命週期差異</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/hermes/presets/dealer-ecommerce-sites.yaml">docs/hermes/presets/dealer-ecommerce-sites.yaml</a></td>
+<td align="right">4,747</td>
+<td>電商網站巡查網路 policy preset</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/hermes/scenario-setup-guide.md">docs/hermes/scenario-setup-guide.md</a></td>
+<td align="right">18,349</td>
+<td>搜尋、通道、開發、巡查、任務與記憶情境</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/backup-and-state-guide.md">docs/nemoclaw/backup-and-state-guide.md</a></td>
+<td align="right">23,887</td>
+<td>備份還原、manifest、真實資料路徑與驗證紀錄</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/command-reference.md">docs/nemoclaw/command-reference.md</a></td>
+<td align="right">22,030</td>
+<td>共通管理 CLI、熱重載、異動與重建邊界</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/config-storage-map.md">docs/nemoclaw/config-storage-map.md</a></td>
+<td align="right">16,534</td>
+<td>gateway、sandbox、憑證與檔案路徑對照</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/cron-job-notes.md">docs/nemoclaw/cron-job-notes.md</a></td>
+<td align="right">11,083</td>
+<td>排程、時區、投遞與執行成功的區別</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/inference-provider-limits-and-switching.md">docs/nemoclaw/inference-provider-limits-and-switching.md</a></td>
+<td align="right">31,820</td>
+<td>共享推論路由、模型切換限制及替代思路</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/iso-product-spec.md">docs/nemoclaw/iso-product-spec.md</a></td>
+<td align="right">8,933</td>
+<td>早期 ISO 產品草案，未同步後續 DinD 全部發現</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/monitoring-and-recovery-guide.md">docs/nemoclaw/monitoring-and-recovery-guide.md</a></td>
+<td align="right">15,854</td>
+<td>健康檢查、forward、watchdog、復原與重建</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/onboard-parameters.md">docs/nemoclaw/onboard-parameters.md</a></td>
+<td align="right">15,870</td>
+<td>Agent、provider、資源、build 參數與適用性</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/policy-whitelist-and-control-layers.md">docs/nemoclaw/policy-whitelist-and-control-layers.md</a></td>
+<td align="right">23,442</td>
+<td>網路、TLS、filesystem 與多層控制</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/quick-start.md">docs/nemoclaw/quick-start.md</a></td>
+<td align="right">9,580</td>
+<td>安裝後的最小可用流程與已知注意事項</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/rebuild-vs-recreate.md">docs/nemoclaw/rebuild-vs-recreate.md</a></td>
+<td align="right">14,789</td>
+<td>restart、rebuild、recreate、destroy 與保存範圍</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/skill-plugin-mcp-install-notes.md">docs/nemoclaw/skill-plugin-mcp-install-notes.md</a></td>
+<td align="right">19,902</td>
+<td>Skill/MCP/Plugin 安裝入口、限制與驗證</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/storage-locations-dind-vs-host.md">docs/nemoclaw/storage-locations-dind-vs-host.md</a></td>
+<td align="right">13,903</td>
+<td>DinD 與原生 host 的實際儲存路徑</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/vendor-and-cloud-service-landscape.md">docs/nemoclaw/vendor-and-cloud-service-landscape.md</a></td>
+<td align="right">17,036</td>
+<td>硬體/預裝與雲端市場初步整理，未重查外部資料</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/openclaw/command-reference.md">docs/openclaw/command-reference.md</a></td>
+<td align="right">18,097</td>
+<td>OpenClaw CLI、API、session 與任務操作</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/openclaw/scenario-setup-guide.md">docs/openclaw/scenario-setup-guide.md</a></td>
+<td align="right">25,680</td>
+<td>搜尋、通道、記憶、產檔與開發情境</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/openclaw/setup-notes.md">docs/openclaw/setup-notes.md</a></td>
+<td align="right">70,883</td>
+<td>初始設定、Tavily、排程與限制補充</td>
+</tr>
+</tbody></table></div>
+<h2 id="section-5">reports（7 檔）</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>檔案／固定版本來源</th>
+<th align="right">Bytes</th>
+<th>用途與閱讀定位</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/reports/01-overview-and-recommendation.html">reports/01-overview-and-recommendation.html</a></td>
+<td align="right">65,816</td>
+<td>主管用總覽與建議，須對照較新筆記</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/reports/02-agent-comparison.html">reports/02-agent-comparison.html</a></td>
+<td align="right">62,416</td>
+<td>Agent 比較閱讀版</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/reports/03-architecture-diagram.html">reports/03-architecture-diagram.html</a></td>
+<td align="right">50,391</td>
+<td>架構圖閱讀版</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/reports/04-config-layers.html">reports/04-config-layers.html</a></td>
+<td align="right">47,591</td>
+<td>設定分層閱讀版</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/reports/05-scenario-handbook.html">reports/05-scenario-handbook.html</a></td>
+<td align="right">35,110</td>
+<td>情境手冊閱讀版，部分步驟已過時</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/reports/06-risk-and-ops.html">reports/06-risk-and-ops.html</a></td>
+<td align="right">28,629</td>
+<td>風險維運閱讀版，部分驗證狀態已過時</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/reports/README.md">reports/README.md</a></td>
+<td align="right">2,011</td>
+<td>HTML 報告用途、閱讀順序及衝突處理</td>
+</tr>
+</tbody></table></div>
+<h2 id="section-6">scripts（15 檔）</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>檔案／固定版本來源</th>
+<th align="right">Bytes</th>
+<th>用途與閱讀定位</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/benchmark/first-response-benchmark.sh">scripts/benchmark/first-response-benchmark.sh</a></td>
+<td align="right">4,935</td>
+<td>基本回應、耗時與全域 token metrics 差值</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/benchmark/general-task-benchmark.sh">scripts/benchmark/general-task-benchmark.sh</a></td>
+<td align="right">4,840</td>
+<td>一般任務輸出與耗時；非完整品質自動評分</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/benchmark/lib/common.sh">scripts/benchmark/lib/common.sh</a></td>
+<td align="right">4,498</td>
+<td>命令轉送、模型 metrics 與 benchmark 共用函式</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/benchmark/longmemeval-crosssession-benchmark.sh">scripts/benchmark/longmemeval-crosssession-benchmark.sh</a></td>
+<td align="right">20,578</td>
+<td>跨 session 記憶測試、停滯與評分</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/benchmark/longmemeval-memory-benchmark.sh">scripts/benchmark/longmemeval-memory-benchmark.sh</a></td>
+<td align="right">26,436</td>
+<td>同 session LongMemEval 子集與模型 judge</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/benchmark/multiturn-memory-benchmark.sh">scripts/benchmark/multiturn-memory-benchmark.sh</a></td>
+<td align="right">4,500</td>
+<td>多輪記憶 smoke test</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/benchmark/nemoclaw-pptx-benchmark.sh">scripts/benchmark/nemoclaw-pptx-benchmark.sh</a></td>
+<td align="right">11,215</td>
+<td>PDF→PPTX 測試、產物結構檢查與清理</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/benchmark/policy-whitelist-benchmark.sh">scripts/benchmark/policy-whitelist-benchmark.sh</a></td>
+<td align="right">4,631</td>
+<td>受控天氣查詢的 policy 兩階段測試</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/benchmark/session-reset-benchmark.sh">scripts/benchmark/session-reset-benchmark.sh</a></td>
+<td align="right">8,215</td>
+<td>上下文重置測試；兩 Agent 流程不同</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/benchmark/stuck-task-recovery-benchmark.sh">scripts/benchmark/stuck-task-recovery-benchmark.sh</a></td>
+<td align="right">6,998</td>
+<td>逾時、殘留程序與重啟復原觀察</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/benchmark/web-search-benchmark.sh">scripts/benchmark/web-search-benchmark.sh</a></td>
+<td align="right">10,424</td>
+<td>Web Search 工具路徑測試</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/install/nemoclaw-auto-install.sh">scripts/install/nemoclaw-auto-install.sh</a></td>
+<td align="right">12,840</td>
+<td>歷史 OpenClaw 自動安裝流程</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/install/nemoclaw-hermes-auto-install.sh">scripts/install/nemoclaw-hermes-auto-install.sh</a></td>
+<td align="right">15,151</td>
+<td>歷史 Hermes 自動安裝流程</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/install/README.md">scripts/install/README.md</a></td>
+<td align="right">2,746</td>
+<td>歷史腳本定位與較新部署入口</td>
+</tr>
+<tr>
+<td><a href="https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/monitoring/dashboard-forward-watchdog.sh">scripts/monitoring/dashboard-forward-watchdog.sh</a></td>
+<td align="right">5,895</td>
+<td>外部 Dashboard forward HTTP 健康與重啟監控</td>
+</tr>
+</tbody></table></div>
+<footer>Markdown 為內容來源。修改正文後請重新產生本頁；來源版本及證據限制以正文為準。</footer></main></body></html>

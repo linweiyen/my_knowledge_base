@@ -1,0 +1,12 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {marked} from 'file:///C:/Users/1875/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/marked/lib/marked.esm.js';
+const here=path.dirname(fileURLToPath(import.meta.url));
+const markdown=fs.readFileSync(path.join(here,'research.md'),'utf8').replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/,'');
+let body=marked.parse(markdown);
+body=body.replace(/<table>/g,'<div class="table-wrap"><table>').replace(/<\/table>/g,'</table></div>');
+const css=`*{box-sizing:border-box}body{margin:0;color:#213044;background:#f5f7fb;font:17px/1.85 system-ui,"Segoe UI","Noto Sans TC",sans-serif}main{max-width:1160px;margin:auto;padding:36px 30px 80px}nav{font-size:14px;display:flex;gap:24px;flex-wrap:wrap}a{color:#245b9b;text-underline-offset:4px}header{padding:45px 0 25px;border-bottom:1px solid #d9e1eb}.eyebrow{color:#53667d;letter-spacing:.1em;font-size:13px}h1{font-size:clamp(32px,5vw,52px);line-height:1.3;margin:15px 0}h2{font-size:25px;margin:52px 0 20px}p{max-width:900px}table{width:100%;border-collapse:collapse;background:#fff;font-size:16px;line-height:1.75}th,td{padding:17px 18px;border:1px solid #dbe3ed;text-align:left;vertical-align:top}th{background:#eaf0f7;white-space:nowrap}.table-wrap{overflow-x:auto;border-radius:10px;margin:22px 0}blockquote{background:#eaf0f7;border-left:4px solid #4676ac;margin:24px 0;padding:16px 24px}blockquote p{margin:0}li{margin:7px 0}footer{margin-top:60px;border-top:1px solid #d9e1eb;padding-top:18px;color:#63758b;font-size:13px}@media(max-width:700px){main{padding:22px 17px 50px}table{min-width:750px}h2{font-size:23px}header{padding-top:28px}}@media print{body{background:white}main{padding:0;max-width:none}nav{display:none}table{font-size:12px}h2{break-after:avoid}tr{break-inside:avoid}}`;
+body=body.replace('<h1>Agent Pack 產品定位</h1>','<header><div class="eyebrow">PRODUCT KICK OFF · 2026-10-21</div><h1>Agent Pack 產品定位</h1></header>');
+fs.writeFileSync(path.join(here,'index.html'),`<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Agent Pack 產品定位｜Kick off 討論稿</title><style>${css}</style></head><body><main><nav><a href="../index.html">Agent Pack 入口</a><a href="../../../index.html">知識庫首頁</a><a href="research.md">Markdown 原文</a></nav>${body}<footer>討論稿，尚未選定產品定位。內容以 research.md 維護，再由 build-report.mjs 產生閱讀頁。</footer></main></body></html>`);
+console.log('Generated positioning discussion page.');

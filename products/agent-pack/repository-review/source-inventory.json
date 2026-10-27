@@ -1,0 +1,445 @@
+{
+  "repository": "https://gitlab.com/leadtek/agentpack",
+  "branch": "main",
+  "observedCommit": "d3fe1734fa95d87760145a823975eeebff8cbb6b",
+  "acquired": "2026-10-21",
+  "archiveSha256": "D553AB5B8B9420CC048F4CD374AD800D2FF722FE8F59EF88D00FCAC521CF6D5A",
+  "fileCount": 62,
+  "totalBytes": 1477764,
+  "files": [
+    {
+      "path": ".gitignore",
+      "bytes": 492,
+      "sha256": "e26b23e085398bbf2769513d4acccd9a8473ba7e30453555c4d48079250d25a6",
+      "role": "排除本機秘密、log、產物等檔案",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/.gitignore"
+    },
+    {
+      "path": "docker-dind/.env.example",
+      "bytes": 10444,
+      "sha256": "c6f29e62e9e0f3d3713d64a0eb507d20479e7efadac57a793c4e8198a57b031c",
+      "role": "DinD Agent、模型、通道、資源設定範本",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dind/.env.example"
+    },
+    {
+      "path": "docker-dind/docker-compose.yml",
+      "bytes": 7710,
+      "sha256": "69b9114648281cfe657626b50c8d28e76c32c339998b615cc6a38caedc3bddaa",
+      "role": "外層 gateway、volumes、ports 與可選代理服務",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dind/docker-compose.yml"
+    },
+    {
+      "path": "docker-dind/docker-entrypoint.sh",
+      "bytes": 68019,
+      "sha256": "1de8a3e9d2eda72098d52d6d3c34cce95743001f68bc6f839dd3d241d9283a2c",
+      "role": "啟動、onboard、修補、forward 與內建 watchdog",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dind/docker-entrypoint.sh"
+    },
+    {
+      "path": "docker-dind/Dockerfile",
+      "bytes": 7632,
+      "sha256": "2e5f21ec31dff258b88a882c4e544afe9a8b325d4975f0f000eb676e461f4cc2",
+      "role": "Ubuntu 外層映像、工具與巢狀 Docker 依賴",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dind/Dockerfile"
+    },
+    {
+      "path": "docker-dind/hermes-dashboard-lan-proxy.conf.template",
+      "bytes": 2185,
+      "sha256": "c7c6cb00cc33a958c458b906b668e097ab92a9be71bd594eb79c3f2510e3e4a0",
+      "role": "非預設的 Hermes LAN nginx 代理範本",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dind/hermes-dashboard-lan-proxy.conf.template"
+    },
+    {
+      "path": "docker-dind/README.md",
+      "bytes": 29862,
+      "sha256": "a5ddc20558cda0d849457fcb1dad588a73c4901264b96819cc8e5885a01dc0d7",
+      "role": "現行 DinD 安裝、操作與架構說明",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dind/README.md"
+    },
+    {
+      "path": "docker-dind/scripts/hermes-dashboard-tunnel.py",
+      "bytes": 5910,
+      "sha256": "d074e5747fffa418be562516f1af8194bb38ff93578e03e7f4364b9c9dd8ce0a",
+      "role": "Hermes loopback TCP relay 輔助程式",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dind/scripts/hermes-dashboard-tunnel.py"
+    },
+    {
+      "path": "docker-dind/troubleshooting.md",
+      "bytes": 204182,
+      "sha256": "640dfce11e6b83a5103b4b5a6b492a2b5f07a3e6e2d5bda5dd9ced328cfca01d",
+      "role": "D1–D32 事故、修法與後續更正",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dind/troubleshooting.md"
+    },
+    {
+      "path": "docker-dood/.env.example",
+      "bytes": 8630,
+      "sha256": "6fbd22e0afa14f4c0e9827ba7a061364ec337208b69fdd80b27b334f491f8446",
+      "role": "前代 DooD 設定範本",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dood/.env.example"
+    },
+    {
+      "path": "docker-dood/docker-compose.yml",
+      "bytes": 3195,
+      "sha256": "4af827382687a9f09cbc0987ff96efc53b0da77c5c8e0efdcd388de52e92a5c8",
+      "role": "host socket 與 sibling-container 部署",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dood/docker-compose.yml"
+    },
+    {
+      "path": "docker-dood/docker-entrypoint.sh",
+      "bytes": 24028,
+      "sha256": "36df6780a5a6ee99f6de61a13360788bd0c09bdd07a3c74d62c20fbd3365cbe7",
+      "role": "前代啟動、onboard、修補與 forward",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dood/docker-entrypoint.sh"
+    },
+    {
+      "path": "docker-dood/Dockerfile",
+      "bytes": 2423,
+      "sha256": "ca2eb929cde437664fe545214b1897776085dd4092bcacbf400e59b87b4383a1",
+      "role": "DooD 外層映像與工具依賴",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dood/Dockerfile"
+    },
+    {
+      "path": "docker-dood/hermes-dashboard-lan-proxy.conf.template",
+      "bytes": 1728,
+      "sha256": "b819233049299ed710c76a30d65db82d01723ca482c7e68a59bb263caa792473",
+      "role": "前代 Hermes LAN proxy 範本",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dood/hermes-dashboard-lan-proxy.conf.template"
+    },
+    {
+      "path": "docker-dood/README.md",
+      "bytes": 25233,
+      "sha256": "9eed752bc9b0fe9c2eb28c2e91b6fb9856d3641816497d68c4613feda03046c5",
+      "role": "前代部署入口與限制",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dood/README.md"
+    },
+    {
+      "path": "docker-dood/troubleshooting.md",
+      "bytes": 54635,
+      "sha256": "5ba4a223009a516efe9522578aa58671fec3f924b6d3058fb7756e153f994bc2",
+      "role": "前代 storage、gateway、session 與路由事故",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docker-dood/troubleshooting.md"
+    },
+    {
+      "path": "docs/comparison/openclaw-hermes-comparison.md",
+      "bytes": 73650,
+      "sha256": "3385a239f535f13749830bfd951773bc02306827cb2f3e6d54ae1d4e8413032c",
+      "role": "比較總表、實測數據、判讀條件與限制",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/comparison/openclaw-hermes-comparison.md"
+    },
+    {
+      "path": "docs/hermes/browser-chromium-setup.md",
+      "bytes": 59638,
+      "sha256": "3d0930e4a66e560c85e1458c9c8b41361654fe4d2a3fd0a3a6971100fd09c9f3",
+      "role": "Chromium、agent-browser、policy、資源與新版命名修正",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/hermes/browser-chromium-setup.md"
+    },
+    {
+      "path": "docs/hermes/command-reference.md",
+      "bytes": 33234,
+      "sha256": "7444fa068a197fd0dc7b8ae246f0baa7a4f438f7d878410e466e287a088915c0",
+      "role": "Hermes CLI、設定、API、記憶與生命週期差異",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/hermes/command-reference.md"
+    },
+    {
+      "path": "docs/hermes/presets/dealer-ecommerce-sites.yaml",
+      "bytes": 4747,
+      "sha256": "b52fd4a3f9c0c4c4f64efdfa09508af52bc12fe0d040bcb905de3ffc60b89aa7",
+      "role": "電商網站巡查網路 policy preset",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/hermes/presets/dealer-ecommerce-sites.yaml"
+    },
+    {
+      "path": "docs/hermes/scenario-setup-guide.md",
+      "bytes": 18349,
+      "sha256": "3617e1fee6e6a4e5eb36d966e726d25496ffc0e3463531244780d27d98f00286",
+      "role": "搜尋、通道、開發、巡查、任務與記憶情境",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/hermes/scenario-setup-guide.md"
+    },
+    {
+      "path": "docs/nemoclaw/backup-and-state-guide.md",
+      "bytes": 23887,
+      "sha256": "76c0db31027f96d80a58bca19c94bc29b79900089b8fbfda057dbf1b009bd639",
+      "role": "備份還原、manifest、真實資料路徑與驗證紀錄",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/backup-and-state-guide.md"
+    },
+    {
+      "path": "docs/nemoclaw/command-reference.md",
+      "bytes": 22030,
+      "sha256": "75bf03afd60679c28e594a2f80ee5d0103d1bd81dabaca8b5230e4d5d480c98b",
+      "role": "共通管理 CLI、熱重載、異動與重建邊界",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/command-reference.md"
+    },
+    {
+      "path": "docs/nemoclaw/config-storage-map.md",
+      "bytes": 16534,
+      "sha256": "dc4f7546190362f89db764bbcf6229fc42b59dc7febf27b95e4adbfa57c6c36a",
+      "role": "gateway、sandbox、憑證與檔案路徑對照",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/config-storage-map.md"
+    },
+    {
+      "path": "docs/nemoclaw/cron-job-notes.md",
+      "bytes": 11083,
+      "sha256": "e539ebabe611e39a4ba88525db3b61d1467412cfdd20efc1685d50f7f938e318",
+      "role": "排程、時區、投遞與執行成功的區別",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/cron-job-notes.md"
+    },
+    {
+      "path": "docs/nemoclaw/inference-provider-limits-and-switching.md",
+      "bytes": 31820,
+      "sha256": "cd60ab414ba638a1a31febb6e84d5cca9d45a33e44980a8438703d3d28cffb0b",
+      "role": "共享推論路由、模型切換限制及替代思路",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/inference-provider-limits-and-switching.md"
+    },
+    {
+      "path": "docs/nemoclaw/iso-product-spec.md",
+      "bytes": 8933,
+      "sha256": "3337099ae37b90574d0e629acd940238441bb2516a24b27eab176d182ab07f12",
+      "role": "早期 ISO 產品草案，未同步後續 DinD 全部發現",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/iso-product-spec.md"
+    },
+    {
+      "path": "docs/nemoclaw/monitoring-and-recovery-guide.md",
+      "bytes": 15854,
+      "sha256": "848e0a06ccc757ddbbb3869b24948ab1705e74edeafc8236771bbec6d00c0cbd",
+      "role": "健康檢查、forward、watchdog、復原與重建",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/monitoring-and-recovery-guide.md"
+    },
+    {
+      "path": "docs/nemoclaw/onboard-parameters.md",
+      "bytes": 15870,
+      "sha256": "cbc8df63519295500ae36330b3df81cb37d6a2caa91bd1e0f1fbd881c55a1b3f",
+      "role": "Agent、provider、資源、build 參數與適用性",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/onboard-parameters.md"
+    },
+    {
+      "path": "docs/nemoclaw/policy-whitelist-and-control-layers.md",
+      "bytes": 23442,
+      "sha256": "3e4d9aeb3a556b2f493e9dbf58995825152c39ce2af2325c0468d0f8c2d36f5c",
+      "role": "網路、TLS、filesystem 與多層控制",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/policy-whitelist-and-control-layers.md"
+    },
+    {
+      "path": "docs/nemoclaw/quick-start.md",
+      "bytes": 9580,
+      "sha256": "279f5fad0aabf3a77e3ef0cf4078d1f3a2925f0cb6a420d4d7e983118b5269d7",
+      "role": "安裝後的最小可用流程與已知注意事項",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/quick-start.md"
+    },
+    {
+      "path": "docs/nemoclaw/rebuild-vs-recreate.md",
+      "bytes": 14789,
+      "sha256": "0d422736c9704cd44599c37d2e95703a929425d64ef467b66f7a5dd4c2f739f3",
+      "role": "restart、rebuild、recreate、destroy 與保存範圍",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/rebuild-vs-recreate.md"
+    },
+    {
+      "path": "docs/nemoclaw/skill-plugin-mcp-install-notes.md",
+      "bytes": 19902,
+      "sha256": "a121c628f4a69170c56cb59440e156c2ade54933fc1b26481344aad71456ba98",
+      "role": "Skill/MCP/Plugin 安裝入口、限制與驗證",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/skill-plugin-mcp-install-notes.md"
+    },
+    {
+      "path": "docs/nemoclaw/storage-locations-dind-vs-host.md",
+      "bytes": 13903,
+      "sha256": "50a5fb7ebc07a2ac3ff317038393aa5f84b3636bd8cb0aa95ac1d1bf02354737",
+      "role": "DinD 與原生 host 的實際儲存路徑",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/storage-locations-dind-vs-host.md"
+    },
+    {
+      "path": "docs/nemoclaw/vendor-and-cloud-service-landscape.md",
+      "bytes": 17036,
+      "sha256": "7896820c66cfa77165db3f69f73a186677eabea003e6f77c514082ca0b4b5db7",
+      "role": "硬體/預裝與雲端市場初步整理，未重查外部資料",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/nemoclaw/vendor-and-cloud-service-landscape.md"
+    },
+    {
+      "path": "docs/openclaw/command-reference.md",
+      "bytes": 18097,
+      "sha256": "cc5f5ebbe45cddcbf633d4e1601e63e9609e2d628602773eee28c77106b10a7a",
+      "role": "OpenClaw CLI、API、session 與任務操作",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/openclaw/command-reference.md"
+    },
+    {
+      "path": "docs/openclaw/scenario-setup-guide.md",
+      "bytes": 25680,
+      "sha256": "45ea1f32cb0559fa0129d1d1f64b89e210676312a5be9d9cf29f5de4070d35bb",
+      "role": "搜尋、通道、記憶、產檔與開發情境",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/openclaw/scenario-setup-guide.md"
+    },
+    {
+      "path": "docs/openclaw/setup-notes.md",
+      "bytes": 70883,
+      "sha256": "30fb7068032b68175e6bc572b8767be9b7870aba6472ac8fb2687df78d80f91f",
+      "role": "初始設定、Tavily、排程與限制補充",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/docs/openclaw/setup-notes.md"
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 11337,
+      "sha256": "286d6ca8561ea25b6ff5ee680a513063d57e7161da3a2791e6b2ee63205d6912",
+      "role": "此 repository 的 Apache 2.0 授權",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/LICENSE"
+    },
+    {
+      "path": "README.md",
+      "bytes": 25312,
+      "sha256": "b7a73e83c90b8a2b6ed5b3304adc9c894f404bfe588893d49722d75f85501679",
+      "role": "全庫定位、版本與文件入口",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/README.md"
+    },
+    {
+      "path": "reports/01-overview-and-recommendation.html",
+      "bytes": 65816,
+      "sha256": "4cca57fc6a8ca6fa41adc3b11b88535d8a981c6f07ddf4c25960c72529d3231a",
+      "role": "主管用總覽與建議，須對照較新筆記",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/reports/01-overview-and-recommendation.html"
+    },
+    {
+      "path": "reports/02-agent-comparison.html",
+      "bytes": 62416,
+      "sha256": "69681886aa84fcf332cb66aefade0135b9528e9d4e20dd811dc9a60d2dbb0a47",
+      "role": "Agent 比較閱讀版",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/reports/02-agent-comparison.html"
+    },
+    {
+      "path": "reports/03-architecture-diagram.html",
+      "bytes": 50391,
+      "sha256": "f2c25dd3fc952dcf67aa8b7922c37f2481e7248ef3195a6321cfe0d18a5e323a",
+      "role": "架構圖閱讀版",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/reports/03-architecture-diagram.html"
+    },
+    {
+      "path": "reports/04-config-layers.html",
+      "bytes": 47591,
+      "sha256": "dffa38a88a28eab2a24aec4e6e0a6fa15a24f359672c507bc14972c95a170f5b",
+      "role": "設定分層閱讀版",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/reports/04-config-layers.html"
+    },
+    {
+      "path": "reports/05-scenario-handbook.html",
+      "bytes": 35110,
+      "sha256": "ffa7c910d466a145df178ba915a06c5e4bde8bec173647b7fbe57b4e6bc75207",
+      "role": "情境手冊閱讀版，部分步驟已過時",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/reports/05-scenario-handbook.html"
+    },
+    {
+      "path": "reports/06-risk-and-ops.html",
+      "bytes": 28629,
+      "sha256": "9fbfd1e0bbf19344d25e08159f5029c3e5047a5508685c544525543529f32c5a",
+      "role": "風險維運閱讀版，部分驗證狀態已過時",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/reports/06-risk-and-ops.html"
+    },
+    {
+      "path": "reports/README.md",
+      "bytes": 2011,
+      "sha256": "323a3e20a5a8ab713346493c10ad3a22b5f4352470358d03892998b781440c22",
+      "role": "HTML 報告用途、閱讀順序及衝突處理",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/reports/README.md"
+    },
+    {
+      "path": "scripts/benchmark/first-response-benchmark.sh",
+      "bytes": 4935,
+      "sha256": "0c273a73c0d16ee8bc682a97f2a3fd707adaf4d517b6d1a1c892eaaeb8d56c36",
+      "role": "基本回應、耗時與全域 token metrics 差值",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/benchmark/first-response-benchmark.sh"
+    },
+    {
+      "path": "scripts/benchmark/general-task-benchmark.sh",
+      "bytes": 4840,
+      "sha256": "1cbea804797f051041f3c1cdce0b06227548af1dd315cfa35c340aaa9c4aec41",
+      "role": "一般任務輸出與耗時；非完整品質自動評分",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/benchmark/general-task-benchmark.sh"
+    },
+    {
+      "path": "scripts/benchmark/lib/common.sh",
+      "bytes": 4498,
+      "sha256": "7466a6b4d348a4b1e19f4d348edaba82760f639852506f969b41c7a98ba5ad9a",
+      "role": "命令轉送、模型 metrics 與 benchmark 共用函式",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/benchmark/lib/common.sh"
+    },
+    {
+      "path": "scripts/benchmark/longmemeval-crosssession-benchmark.sh",
+      "bytes": 20578,
+      "sha256": "2067aa30fa07a4aa248abced4fa1b6ea7db9c008043ad8dd6f38dda5f8c99f42",
+      "role": "跨 session 記憶測試、停滯與評分",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/benchmark/longmemeval-crosssession-benchmark.sh"
+    },
+    {
+      "path": "scripts/benchmark/longmemeval-memory-benchmark.sh",
+      "bytes": 26436,
+      "sha256": "563caed7c909c3823c4a5afbec5eebac355e2e86da48aa70adcab9964f359506",
+      "role": "同 session LongMemEval 子集與模型 judge",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/benchmark/longmemeval-memory-benchmark.sh"
+    },
+    {
+      "path": "scripts/benchmark/multiturn-memory-benchmark.sh",
+      "bytes": 4500,
+      "sha256": "1483d66e1fdb55efea8ab5c5840cb25953b1e43e3461401588db8cf41c624b80",
+      "role": "多輪記憶 smoke test",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/benchmark/multiturn-memory-benchmark.sh"
+    },
+    {
+      "path": "scripts/benchmark/nemoclaw-pptx-benchmark.sh",
+      "bytes": 11215,
+      "sha256": "46adc904cbb78d710e1817e6328e9de012c783ebc59a9ae1abd0043fd07bd537",
+      "role": "PDF→PPTX 測試、產物結構檢查與清理",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/benchmark/nemoclaw-pptx-benchmark.sh"
+    },
+    {
+      "path": "scripts/benchmark/policy-whitelist-benchmark.sh",
+      "bytes": 4631,
+      "sha256": "b6eadba2159e8c40850e0b66e0dc5d3e44e66d26139cdf9757e22d8fc7ede82f",
+      "role": "受控天氣查詢的 policy 兩階段測試",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/benchmark/policy-whitelist-benchmark.sh"
+    },
+    {
+      "path": "scripts/benchmark/session-reset-benchmark.sh",
+      "bytes": 8215,
+      "sha256": "396d4005e8836eb764266ec0b8a9305813989c2c519967c2b9af15ae7446dd9d",
+      "role": "上下文重置測試；兩 Agent 流程不同",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/benchmark/session-reset-benchmark.sh"
+    },
+    {
+      "path": "scripts/benchmark/stuck-task-recovery-benchmark.sh",
+      "bytes": 6998,
+      "sha256": "5a852fe9439fe0b29219436740463c6286ffacc674327947481d075ffe9eb4c6",
+      "role": "逾時、殘留程序與重啟復原觀察",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/benchmark/stuck-task-recovery-benchmark.sh"
+    },
+    {
+      "path": "scripts/benchmark/web-search-benchmark.sh",
+      "bytes": 10424,
+      "sha256": "4f602fa75a1c07a94a72e982871fda972863028c3a7c3fffd3302528c4a50078",
+      "role": "Web Search 工具路徑測試",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/benchmark/web-search-benchmark.sh"
+    },
+    {
+      "path": "scripts/install/nemoclaw-auto-install.sh",
+      "bytes": 12840,
+      "sha256": "1bb65479942975425ff72f01610e2f9b83cdb3d580b682b66a9f79453a3b7a70",
+      "role": "歷史 OpenClaw 自動安裝流程",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/install/nemoclaw-auto-install.sh"
+    },
+    {
+      "path": "scripts/install/nemoclaw-hermes-auto-install.sh",
+      "bytes": 15151,
+      "sha256": "987a4a4071d036c2ebe73c678b67ae7ca253d98a021bf07f898b37cf115bf49f",
+      "role": "歷史 Hermes 自動安裝流程",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/install/nemoclaw-hermes-auto-install.sh"
+    },
+    {
+      "path": "scripts/install/README.md",
+      "bytes": 2746,
+      "sha256": "2b520517a3444f331e25bb8f7ebbe46ce9ae9479a0116233295768776f4bc631",
+      "role": "歷史腳本定位與較新部署入口",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/install/README.md"
+    },
+    {
+      "path": "scripts/monitoring/dashboard-forward-watchdog.sh",
+      "bytes": 5895,
+      "sha256": "06648764372253d8b6ea005570431bcc8930d8c74794ddd5b8092761d2f5df81",
+      "role": "外部 Dashboard forward HTTP 健康與重啟監控",
+      "url": "https://gitlab.com/leadtek/agentpack/-/blob/d3fe1734fa95d87760145a823975eeebff8cbb6b/scripts/monitoring/dashboard-forward-watchdog.sh"
+    }
+  ]
+}

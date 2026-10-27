@@ -22,7 +22,23 @@
 
 - [B300 vs RTX PRO 6000 Blackwell](products/gpu/b300-vs-rtx-pro-6000/pro6000_vs_b300.html)
 
+### Agent Pack
+
+- [產品規劃啟動會議簡報](products/agent-pack/kick-off/index.html)：商業價值、定位、情境、產品缺口與執行安排
+- [產品定位：Kick off 討論稿](products/agent-pack/positioning/index.html)：三個候選方向與會議決策問題
+- [單機管理系統研究入口](products/agent-pack/index.html)
+- [全庫閱讀與規格影響](products/agent-pack/repository-review/index.html)：62 個檔案盤點、架構、能力與驗證缺口
+- [完整來源索引](products/agent-pack/repository-review/source-inventory.html)
+
+### Agent Pack
+
+- [單機管理系統研究入口](products/agent-pack/index.html)
+- [全庫閱讀與規格影響](products/agent-pack/repository-review/index.html)：62 個檔案盤點、架構、能力與驗證缺口
+- [完整來源索引](products/agent-pack/repository-review/source-inventory.html)
+
 ### AI Coding
+
+- [AI Coding 民間案例研究](topics/ai-coding/workflows/real-world-cases/index.html)
 
 - [AI Harness Engineering 與 Context Engineering](topics/ai-coding/harness-engineering/overview/ai_harness_engineering_report.html)
 - [Harness Engineering of Claude Code](topics/ai-coding/tools/claude-code/harness_engineering_of_claude_code.html)
@@ -64,3 +80,4 @@ MyKnowledgeBase/
 ## 維護方式
 
 研究內容以 Git 保存。新增或修改研究後，請同步更新對應的入口頁與連結；根目錄 `index.html` 是完整瀏覽入口，`README.md` 是 GitHub 儲存庫首頁說明。
+
