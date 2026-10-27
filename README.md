@@ -27,12 +27,7 @@
 - [產品規劃啟動會議簡報](products/agent-pack/kick-off/index.html)：商業價值、定位、情境、產品缺口與執行安排
 - [產品定位：Kick off 討論稿](products/agent-pack/positioning/index.html)：三個候選方向與會議決策問題
 - [單機管理系統研究入口](products/agent-pack/index.html)
-- [全庫閱讀與規格影響](products/agent-pack/repository-review/index.html)：62 個檔案盤點、架構、能力與驗證缺口
-- [完整來源索引](products/agent-pack/repository-review/source-inventory.html)
-
-### Agent Pack
-
-- [單機管理系統研究入口](products/agent-pack/index.html)
+- [決策紀錄](products/agent-pack/decisions/index.html)：2026-10-22 預整合 Agent 以驗證過的 Docker image 提供，第一版不依賴 NemoClaw／OpenShell
 - [全庫閱讀與規格影響](products/agent-pack/repository-review/index.html)：62 個檔案盤點、架構、能力與驗證缺口
 - [完整來源索引](products/agent-pack/repository-review/source-inventory.html)
 
