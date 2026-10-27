@@ -150,6 +150,12 @@ tags: [gpu-sharing, mps, mig, multi-tenancy]
 
 ## 目前落實範圍
 
+2026-10-22：使用者核定 Agent Pack 第一版採「通用 Docker 容器平台＋驗證過的 image 目錄」：預整合 Agent（OpenClaw、Hermes 等）以普通 Docker image 提供，與客戶自製 image 共用同一管理機制，不把 NemoClaw／OpenShell 堆疊納入產品架構；OpenClaw／Hermes 脫離包裝後的可用性待 spike 驗證。決策紀錄存於 `products/agent-pack/decisions/pre-integrated-agents-as-images/`，並新增 `products/agent-pack/decisions/` 入口。該決策的 HTML 以 Python `build-report.py`（python-markdown）產生，因既有 `build-report.mjs` 依賴本機 codex 快取中的 marked 路徑。
+
+2026-10-21：Agent Pack 為單機 Agent 產品研究。使用者因維護考量，明確指定採 Docker、不採 Kubernetes。此為 Agent Pack 的部署原則，不代表 AIDMS 架構變更；具體 Docker 拓樸（含是否沿用研究中的 DinD）仍需工程驗證。
+
+2026-10-21：使用者補充定位：RTX Pack 與 GDMS 準備 phase out，重新設計 Agent Pack 取代 RTX Pack，不推定承接 GDMS 全部能力。主要服務只購單台 GPU 工作站／伺服器的小型客戶，降低 AIDMS 多 node／Kubernetes 部署維護成本壓力。Agent Pack 免建立產品帳號，管理本機資源與模型／Agent Container。需求包含整卡分配、單卡共享、單一 container 使用多張 GPU；共享限制與隔離、多卡模型能力須依硬體及方案驗證。工作負載含大語言模型、客戶自製 Agent container、GitLab 已研究的 OpenClaw／Hermes 候選整合，首版清單仍待核定。最新定位以 `products/agent-pack/kick-off/` 簡報為準，早期定位稿保留討論脈絡。
+
 2026-09-10：使用者核定此規劃，要求記錄在工作區，並在此工作區執行任何動作前閱讀。
 已建立規劃與 `AGENTS.md` 入口指示。
 

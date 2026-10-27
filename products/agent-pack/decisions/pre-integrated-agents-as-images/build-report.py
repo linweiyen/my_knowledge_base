@@ -1,0 +1,13 @@
+"""Generate index.html from research.md (single source). Requires: pip install markdown"""
+import re, pathlib, markdown
+here = pathlib.Path(__file__).parent
+md = (here / "research.md").read_text(encoding="utf-8")
+md = re.sub(r"^---\r?\n[\s\S]*?\r?\n---\r?\n", "", md)
+body = markdown.markdown(md, extensions=["tables"])
+body = body.replace("<table>", '<div class="table-wrap"><table>').replace("</table>", "</table></div>")
+css = '*{box-sizing:border-box}body{margin:0;color:#213044;background:#f5f7fb;font:17px/1.85 system-ui,"Segoe UI","Noto Sans TC",sans-serif}main{max-width:1160px;margin:auto;padding:36px 30px 80px}nav{font-size:14px;display:flex;gap:24px;flex-wrap:wrap}a{color:#245b9b;text-underline-offset:4px}header{padding:45px 0 25px;border-bottom:1px solid #d9e1eb}.eyebrow{color:#53667d;letter-spacing:.1em;font-size:13px}h1{font-size:clamp(28px,4vw,44px);line-height:1.3;margin:15px 0}h2{font-size:25px;margin:52px 0 20px}h3{font-size:20px;margin:36px 0 14px}p{max-width:900px}table{width:100%;border-collapse:collapse;background:#fff;font-size:16px;line-height:1.75}th,td{padding:15px 18px;border:1px solid #dbe3ed;text-align:left;vertical-align:top}th{background:#eaf0f7;white-space:nowrap}.table-wrap{overflow-x:auto;border-radius:10px;margin:22px 0}blockquote{background:#eaf0f7;border-left:4px solid #4676ac;margin:24px 0;padding:16px 24px}blockquote p{margin:0;max-width:none}code{background:#e9edf4;padding:2px 5px;border-radius:4px;font-size:.88em}li{margin:7px 0}footer{margin-top:60px;border-top:1px solid #d9e1eb;padding-top:18px;color:#63758b;font-size:13px}@media(max-width:700px){main{padding:22px 17px 50px}table{min-width:750px}h2{font-size:23px}header{padding-top:28px}}@media print{body{background:white}main{padding:0;max-width:none}nav{display:none}table{font-size:12px}h2{break-after:avoid}tr{break-inside:avoid}}'
+title = "決策：預整合 Agent 以驗證過的 Docker image 提供，第一版不依賴 NemoClaw／OpenShell"
+body = body.replace(f"<h1>{title}</h1>", f'<header><div class="eyebrow">DECISION RECORD · 2026-10-22</div><h1>{title}</h1></header>', 1)
+html = f'<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{title}</title><style>{css}</style></head><body><main><nav><a href="../index.html">決策紀錄</a><a href="../../index.html">Agent Pack 入口</a><a href="../../../../index.html">知識庫首頁</a><a href="research.md">Markdown 原文</a></nav>{body}<footer>內容以 research.md 維護，再由 build-report.py 產生閱讀頁。使用者於 2026-10-22 核定；工程驗證尚未執行。</footer></main></body></html>'
+(here / "index.html").write_text(html, encoding="utf-8")
+print("Generated decision page.")
