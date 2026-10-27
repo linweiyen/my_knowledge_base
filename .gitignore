@@ -43,3 +43,6 @@ __pycache__/
 coverage/
 
 # 研究內容、HTML、Markdown、附件與 .gitkeep 不在忽略範圍內，應依研究價值提交。
+
+# Claude 桌面 app 自動存放的預覽副本（與 repo 內檔案重複）
+Claude outputs/
