@@ -22,7 +22,7 @@
 
 - [B300 vs RTX PRO 6000 Blackwell](products/gpu/b300-vs-rtx-pro-6000/pro6000_vs_b300.html)
 
-### Agent Pack
+### Agent Pack（RTX Pack 2.0）
 
 - [產品規劃啟動會議簡報](products/agent-pack/kick-off/index.html)：商業價值、定位、情境、產品缺口與執行安排
 - [產品定位：Kick off 討論稿](products/agent-pack/positioning/index.html)：三個候選方向與會議決策問題

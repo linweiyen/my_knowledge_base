@@ -150,6 +150,8 @@ tags: [gpu-sharing, mps, mig, multi-tenancy]
 
 ## 目前落實範圍
 
+2026-10-28：使用者檢視啟動會議簡報後核定對外說法：產品名稱標示為「Agent Pack (RTX Pack 2.0)」，與 RTX Pack 的關係由「取代」改為「升級」，GDMS 後續整併方向另行規劃；「不建立產品帳號」改稱「免帳號管理」。簡報、Agent Pack 入口頁、決策清單、首頁與 README 已同步；2026-10-21 的記錄保留為當時的討論脈絡。簡報另新增使用者自助災難復原的範圍與驗收、以工廠／夥伴預裝為前提的交付成本驗收，Open WebUI 列為待評估。
+
 2026-10-27：依使用者要求，將 `products/agent-pack/kick-off/` 簡報由 26 頁精簡為 10 頁，並依 2026-10-22 決策更新內容（預整合 Agent 以驗證過的 image 提供，情境 C 涵蓋自製與驗證 image）。原 26 頁版本保留於 Git 歷史，不另存快照。`build-report.mjs` 的 marked 匯入路徑為使用者本機 codex 快取，代理在本機 Linux 環境執行時以 `npm install marked` 後的替換路徑副本產生 HTML。
 
 2026-10-22：使用者核定 Agent Pack 第一版採「通用 Docker 容器平台＋驗證過的 image 目錄」：預整合 Agent（OpenClaw、Hermes 等）以普通 Docker image 提供，與客戶自製 image 共用同一管理機制，不把 NemoClaw／OpenShell 堆疊納入產品架構；OpenClaw／Hermes 脫離包裝後的可用性待 spike 驗證。決策紀錄存於 `products/agent-pack/decisions/pre-integrated-agents-as-images/`，並新增 `products/agent-pack/decisions/` 入口。該決策的 HTML 以 Python `build-report.py`（python-markdown）產生，因既有 `build-report.mjs` 依賴本機 codex 快取中的 marked 路徑。
